@@ -6,7 +6,7 @@ export default {
 		"./pages/**/*.{ts,tsx}",
 		"./components/**/*.{ts,tsx}",
 		"./app/**/*.{ts,tsx}",
-		"./src/**/*.{ts,tsx}",
+		"./src/**/*.{ts,tsx}"
 	],
 	prefix: "",
 	theme: {
@@ -17,8 +17,20 @@ export default {
 				'2xl': '1400px'
 			}
 		},
+		fontFamily: {
+			golos: ['Golos Text', 'sans-serif'],
+		},
 		extend: {
 			colors: {
+				rzd: {
+					red: '#E21A1A',
+					'red-dark': '#C01010',
+					'red-light': '#FF3B3B',
+					gray: '#F5F5F5',
+					'gray-mid': '#E8E8E8',
+					dark: '#1A1A1A',
+					muted: '#6B6B6B',
+				},
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
 				ring: 'hsl(var(--ring))',
@@ -88,7 +100,19 @@ export default {
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'fade-in': 'fade-in 0.6s ease-out forwards',
+				'slide-up': 'slide-up 0.7s ease-out forwards',
+			},
+			keyframes: {
+				'fade-in': {
+					'0%': { opacity: '0' },
+					'100%': { opacity: '1' },
+				},
+				'slide-up': {
+					'0%': { opacity: '0', transform: 'translateY(30px)' },
+					'100%': { opacity: '1', transform: 'translateY(0)' },
+				},
 			}
 		}
 	},
