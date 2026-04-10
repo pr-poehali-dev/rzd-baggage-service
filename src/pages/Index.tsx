@@ -5,25 +5,20 @@ const steps = [
   {
     number: "01",
     title: "Оставьте заявку",
-    desc: "Укажите дату, время, вокзал и количество мест багажа в форме",
+    desc: "Укажите дату, время, вокзал, поезд и количество мест багажа в форме",
   },
   {
     number: "02",
-    title: "Подтверждение",
-    desc: "Оператор свяжется с вами в течение 15 минут и подтвердит заказ",
+    title: "Оплатите картой",
+    desc: "Оплатите услугу банковской картой онлайн сразу при оформлении заявки",
   },
   {
     number: "03",
-    title: "Оплатите услугу",
-    desc: "Оплатите удобным способом онлайн или наличными на месте",
-  },
-  {
-    number: "04",
     title: "Встреча с носильщиком",
     desc: "Носильщик встретит вас в указанном месте с табличкой с вашим именем",
   },
   {
-    number: "05",
+    number: "04",
     title: "Доставка багажа",
     desc: "Носильщик доставит вещи до вагона, такси или выхода с вокзала",
   },
@@ -31,16 +26,16 @@ const steps = [
 
 const benefits = [
   {
-    icon: "ShieldCheck",
-    title: "Страхование багажа",
-    desc: "Каждая перевозка застрахована. Ваши вещи в полной безопасности",
-    detail: "До 50 000 ₽",
+    icon: "Package",
+    title: "Без ограничений по багажу",
+    desc: "Принимаем чемоданы, сумки и крупногабаритный груз — любое количество мест",
+    detail: "Любой объём",
   },
   {
-    icon: "Package",
-    title: "До 5 мест багажа",
-    desc: "Принимаем чемоданы, сумки и крупногабаритный груз в одном заказе",
-    detail: "Макс. 30 кг/место",
+    icon: "CreditCard",
+    title: "Оплата картой",
+    desc: "Оплата банковской картой онлайн при оформлении заявки — быстро и безопасно",
+    detail: "Visa / Mastercard / МИР",
   },
   {
     icon: "Clock",
@@ -56,8 +51,9 @@ export default function Index() {
     phone: "",
     date: "",
     station: "",
+    train: "",
     bags: "1",
-    comment: "",
+    sign: "",
   });
   const [submitted, setSubmitted] = useState(false);
 
@@ -120,7 +116,7 @@ export default function Index() {
                 <div className="w-px bg-white/10" />
                 <div className="text-center">
                   <div className="text-2xl font-black text-rzd-red">15 мин</div>
-                  <div className="text-xs text-white/50 mt-0.5">подтверждение заявки</div>
+                  <div className="text-xs text-white/50 mt-0.5">до прибытия поезда</div>
                 </div>
                 <div className="w-px bg-white/10" />
                 <div className="text-center">
@@ -139,7 +135,7 @@ export default function Index() {
                   </div>
                   <h3 className="text-xl font-bold mb-2">Заявка принята!</h3>
                   <p className="text-rzd-muted text-sm">
-                    Оператор свяжется с вами в течение 15 минут для подтверждения
+                    Носильщик встретит вас с табличкой в указанном месте
                   </p>
                   <button
                     onClick={() => setSubmitted(false)}
@@ -151,7 +147,7 @@ export default function Index() {
               ) : (
                 <>
                   <h2 className="text-xl font-bold mb-1">Заказать носильщика</h2>
-                  <p className="text-rzd-muted text-sm mb-6">Заполните форму — мы перезвоним</p>
+                  <p className="text-rzd-muted text-sm mb-6">Заполните форму и оплатите картой</p>
                   <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="grid grid-cols-2 gap-3">
                       <div>
@@ -217,16 +213,32 @@ export default function Index() {
                           <option value="3">3 места</option>
                           <option value="4">4 места</option>
                           <option value="5">5 мест</option>
+                          <option value="6">6 мест</option>
+                          <option value="7">7 мест</option>
+                          <option value="8">8 мест</option>
+                          <option value="9">9 мест</option>
+                          <option value="10+">10 и более</option>
                         </select>
                       </div>
                     </div>
                     <div>
-                      <label className="text-xs font-medium text-rzd-muted block mb-1.5">Комментарий (необязательно)</label>
+                      <label className="text-xs font-medium text-rzd-muted block mb-1.5">Поезд и номер вагона</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="Например: № 020А, вагон 5"
+                        value={form.train}
+                        onChange={(e) => setForm({ ...form, train: e.target.value })}
+                        className="w-full border border-rzd-gray-mid rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-rzd-red transition-colors"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-rzd-muted block mb-1.5">Табличка (необязательно)</label>
                       <textarea
                         rows={2}
-                        placeholder="Номер поезда, место встречи, особые пожелания..."
-                        value={form.comment}
-                        onChange={(e) => setForm({ ...form, comment: e.target.value })}
+                        placeholder="Текст на табличке носильщика, особые пожелания..."
+                        value={form.sign}
+                        onChange={(e) => setForm({ ...form, sign: e.target.value })}
                         className="w-full border border-rzd-gray-mid rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-rzd-red transition-colors resize-none"
                       />
                     </div>
@@ -255,10 +267,10 @@ export default function Index() {
             <div className="inline-block w-10 h-1 bg-rzd-red mb-4" />
             <h2 className="text-3xl font-black mb-3">Как работает сервис</h2>
             <p className="text-rzd-muted max-w-md mx-auto">
-              5 простых шагов от заявки до доставки ваших вещей
+              4 простых шага от заявки до доставки ваших вещей
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {steps.map((step, i) => (
               <div key={i} className="relative text-center group">
                 <div className="relative inline-flex items-center justify-center w-16 h-16 bg-white rounded-full border-2 border-rzd-gray-mid group-hover:border-rzd-red transition-colors mb-4 mx-auto">
@@ -300,12 +312,11 @@ export default function Index() {
             ))}
           </div>
 
-          <div className="mt-10 bg-rzd-gray rounded-2xl p-8 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+          <div className="mt-10 bg-rzd-gray rounded-2xl p-8 grid grid-cols-2 md:grid-cols-3 gap-6 text-center">
             {[
-              { label: "Макс. вес", value: "30 кг", sub: "на одно место" },
-              { label: "Макс. мест", value: "5 шт.", sub: "за один заказ" },
               { label: "Стоимость", value: "от 500 ₽", sub: "за 1 место" },
               { label: "Зона работы", value: "Весь вокзал", sub: "включая перроны" },
+              { label: "Отмена заявки", value: "за 15 мин", sub: "полный возврат средств" },
             ].map((item, i) => (
               <div key={i}>
                 <div className="text-2xl font-black text-rzd-red mb-1">{item.value}</div>
