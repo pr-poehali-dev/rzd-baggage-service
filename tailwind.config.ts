@@ -19,6 +19,7 @@ export default {
 		},
 		fontFamily: {
 			golos: ['Golos Text', 'sans-serif'],
+			playfair: ['Playfair Display', 'serif'],
 		},
 		extend: {
 			colors: {
