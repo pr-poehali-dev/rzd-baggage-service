@@ -203,22 +203,21 @@ export default function Index() {
                       </div>
                       <div>
                         <label className="text-xs font-medium text-rzd-muted block mb-1.5">Мест багажа</label>
-                        <select
-                          value={form.bags}
-                          onChange={(e) => setForm({ ...form, bags: e.target.value })}
-                          className="w-full border border-rzd-gray-mid rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-rzd-red transition-colors bg-white"
-                        >
-                          <option value="1">1 место</option>
-                          <option value="2">2 места</option>
-                          <option value="3">3 места</option>
-                          <option value="4">4 места</option>
-                          <option value="5">5 мест</option>
-                          <option value="6">6 мест</option>
-                          <option value="7">7 мест</option>
-                          <option value="8">8 мест</option>
-                          <option value="9">9 мест</option>
-                          <option value="10+">10 и более</option>
-                        </select>
+                        <div className="flex items-center border border-rzd-gray-mid rounded-lg overflow-hidden">
+                          <button
+                            type="button"
+                            onClick={() => setForm({ ...form, bags: String(Math.max(1, Number(form.bags) - 1)) })}
+                            className="px-3 py-2.5 text-rzd-red hover:bg-rzd-gray transition-colors font-bold text-lg leading-none"
+                          >−</button>
+                          <div className="flex-1 text-center text-sm font-bold text-rzd-dark py-2.5 border-x border-rzd-gray-mid">
+                            {form.bags}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setForm({ ...form, bags: String(Number(form.bags) + 1) })}
+                            className="px-3 py-2.5 text-rzd-red hover:bg-rzd-gray transition-colors font-bold text-lg leading-none"
+                          >+</button>
+                        </div>
                       </div>
                     </div>
                     <div>
@@ -242,11 +241,23 @@ export default function Index() {
                         className="w-full border border-rzd-gray-mid rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-rzd-red transition-colors resize-none"
                       />
                     </div>
+
+                    {/* Итоговая цена */}
+                    <div className="bg-rzd-gray rounded-xl px-4 py-3 flex items-center justify-between">
+                      <div className="text-sm text-rzd-muted">
+                        {form.bags} {Number(form.bags) === 1 ? "место" : Number(form.bags) < 5 ? "места" : "мест"} × 500 ₽
+                      </div>
+                      <div className="text-xl font-black text-rzd-dark">
+                        {(Number(form.bags) * 500).toLocaleString("ru-RU")} ₽
+                      </div>
+                    </div>
+
                     <button
                       type="submit"
-                      className="w-full bg-rzd-red hover:bg-rzd-red-dark text-white font-bold py-3 rounded-lg transition-colors text-sm tracking-wide"
+                      className="w-full bg-rzd-red hover:bg-rzd-red-dark text-white font-bold py-3.5 rounded-lg transition-colors text-sm tracking-wide flex items-center justify-center gap-2"
                     >
-                      Отправить заявку
+                      <Icon name="CreditCard" size={16} />
+                      Оплатить и заказать — {(Number(form.bags) * 500).toLocaleString("ru-RU")} ₽
                     </button>
                     <p className="text-center text-xs text-rzd-muted">
                       Нажимая кнопку, вы соглашаетесь с{" "}
