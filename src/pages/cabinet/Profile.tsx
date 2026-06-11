@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { useAuth, SavedRoute } from "@/context/AuthContext";
+import { useAuth, SavedRoute, SERVICE_LABELS, ServiceType } from "@/context/AuthContext";
 import Icon from "@/components/ui/icon";
 
 const inputCls = "w-full border border-rzd-gray-mid rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-rzd-red transition-colors bg-white placeholder:text-rzd-muted/60 disabled:bg-rzd-gray disabled:text-rzd-muted";
@@ -19,9 +19,9 @@ const stations = [
   "Другой вокзал",
 ];
 
-function bagsLabel(n: number) {
+function bagsWord(n: number) {
   if (n === 1) return "1 место";
-  if (n < 5)   return `${n} места`;
+  if (n < 5) return `${n} места`;
   return `${n} мест`;
 }
 
@@ -29,7 +29,6 @@ export default function Profile() {
   const { user, orders, savedRoutes, updateUser, addRoute, deleteRoute, logout } = useAuth();
   const fileRef = useRef<HTMLInputElement>(null);
 
-  // Форма профиля
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({
     lastName:   user?.lastName   ?? "",
@@ -39,10 +38,9 @@ export default function Profile() {
   });
   const [saved, setSaved] = useState(false);
 
-  // Форма нового маршрута
   const [showRouteForm, setShowRouteForm] = useState(false);
   const [newRoute, setNewRoute] = useState<Omit<SavedRoute, "id">>({
-    name: "", station: "", train: "", wagon: "", bags: 1,
+    name: "", station: "", train: "", wagon: "", bags: 1, serviceType: "city_to_wagon",
   });
   const [routeError, setRouteError] = useState("");
 
@@ -72,7 +70,7 @@ export default function Profile() {
       return;
     }
     addRoute(newRoute);
-    setNewRoute({ name: "", station: "", train: "", wagon: "", bags: 1 });
+    setNewRoute({ name: "", station: "", train: "", wagon: "", bags: 1, serviceType: "city_to_wagon" });
     setShowRouteForm(false);
     setRouteError("");
   };
@@ -96,10 +94,9 @@ export default function Profile() {
         )}
       </div>
 
-      {/* Аватар + имя */}
+      {/* Аватар */}
       <div className="bg-white rounded-2xl border border-rzd-gray-mid p-5">
         <div className="flex items-center gap-4">
-          {/* Фото */}
           <div className="relative shrink-0">
             {user.photo ? (
               <img src={user.photo} className="w-16 h-16 rounded-2xl object-cover" alt="Фото профиля" />
@@ -119,15 +116,18 @@ export default function Profile() {
           </div>
 
           <div className="flex-1 min-w-0">
-            <div className="font-black text-rzd-dark text-lg leading-tight">
+            <p className="font-black text-rzd-dark text-lg leading-tight">
               {user.lastName} {user.firstName} {user.middleName}
-            </div>
-            <div className="text-rzd-muted text-sm">{user.phone}</div>
-            {user.email && <div className="text-rzd-muted text-sm">{user.email}</div>}
+            </p>
+            <p className="text-rzd-muted text-sm">{user.phone}</p>
+            {user.email && <p className="text-rzd-muted text-sm">{user.email}</p>}
           </div>
 
           <button
-            onClick={() => { setEditing(!editing); if (editing) setForm({ lastName: user.lastName, firstName: user.firstName, middleName: user.middleName, email: user.email }); }}
+            onClick={() => {
+              setEditing(!editing);
+              if (editing) setForm({ lastName: user.lastName, firstName: user.firstName, middleName: user.middleName, email: user.email });
+            }}
             className="flex items-center gap-1.5 border border-rzd-gray-mid text-rzd-dark text-xs font-semibold px-3 py-2 rounded-lg hover:border-rzd-red transition-colors shrink-0"
           >
             <Icon name={editing ? "X" : "Pencil"} size={13} />
@@ -179,32 +179,37 @@ export default function Profile() {
       <div className="bg-white rounded-2xl border border-rzd-gray-mid p-5">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-bold text-rzd-dark">История заказов</h3>
-          <div className="text-xs text-rzd-muted">{completedOrders.length} поездок · {totalSpent.toLocaleString("ru-RU")} ₽</div>
+          <p className="text-xs text-rzd-muted">{completedOrders.length} поездок · {totalSpent.toLocaleString("ru-RU")} ₽</p>
         </div>
 
         {completedOrders.length === 0 ? (
           <p className="text-rzd-muted text-sm text-center py-4">Заказов пока нет</p>
         ) : (
           <div className="space-y-2">
-            {completedOrders.slice(0, 3).map((o) => (
-              <div key={o.id} className="flex items-center justify-between border border-rzd-gray-mid rounded-xl px-4 py-3">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-8 h-8 bg-rzd-gray rounded-lg flex items-center justify-center shrink-0">
-                    <Icon name="Luggage" fallback="Package" size={14} className="text-rzd-muted" />
-                  </div>
-                  <div className="min-w-0">
-                    <div className="font-semibold text-sm text-rzd-dark">{o.id}</div>
-                    <div className="text-xs text-rzd-muted truncate">
-                      {o.date} · {o.station.split("—").pop()?.trim()} · {bagsLabel(o.bags)}
-                    </div>
-                  </div>
+            {completedOrders.slice(0, 4).map((o) => (
+              <div key={o.id} className="flex items-center gap-3 border border-rzd-gray-mid rounded-xl px-4 py-3">
+                <div className="w-8 h-8 bg-rzd-gray rounded-lg flex items-center justify-center shrink-0">
+                  <Icon name={SERVICE_LABELS[o.serviceType].icon} fallback="Package" size={14} className="text-rzd-muted" />
                 </div>
-                <span className="font-black text-rzd-red text-sm shrink-0 ml-3">{o.price.toLocaleString("ru-RU")} ₽</span>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-sm text-rzd-dark">{o.id}</p>
+                  <p className="text-xs text-rzd-muted truncate">
+                    {o.date} · {o.station.split("—").pop()?.trim()} · {bagsWord(o.bags)}
+                  </p>
+                  {o.rating && (
+                    <div className="flex items-center gap-0.5 mt-0.5">
+                      {[1,2,3,4,5].map((s) => (
+                        <Icon key={s} name="Star" size={11} className={s <= o.rating! ? "text-amber-400" : "text-rzd-gray-mid"} />
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <p className="font-black text-rzd-red text-sm shrink-0">{o.price.toLocaleString("ru-RU")} ₽</p>
               </div>
             ))}
-            {completedOrders.length > 3 && (
+            {completedOrders.length > 4 && (
               <p className="text-center text-xs text-rzd-muted pt-1">
-                И ещё {completedOrders.length - 3} {completedOrders.length - 3 === 1 ? "заказ" : "заказа"}
+                Ещё {completedOrders.length - 4} {completedOrders.length - 4 === 1 ? "заказ" : "заказа"}
               </p>
             )}
           </div>
@@ -227,12 +232,11 @@ export default function Profile() {
           </button>
         </div>
 
-        {/* Форма нового маршрута */}
         {showRouteForm && (
           <div className="border border-rzd-gray-mid rounded-xl p-4 mb-4 space-y-3 bg-rzd-gray/30">
             <h4 className="font-semibold text-rzd-dark text-sm">Новый маршрут</h4>
             <div>
-              <label className={labelCls}>Название маршрута <span className="text-rzd-red">*</span></label>
+              <label className={labelCls}>Название <span className="text-rzd-red">*</span></label>
               <input
                 placeholder='Например: "Домой в Казань"'
                 value={newRoute.name}
@@ -249,6 +253,18 @@ export default function Profile() {
               >
                 <option value="">Выберите вокзал</option>
                 {stations.map((s) => <option key={s}>{s}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className={labelCls}>Тип услуги <span className="text-rzd-red">*</span></label>
+              <select
+                value={newRoute.serviceType}
+                onChange={(e) => setNewRoute({ ...newRoute, serviceType: e.target.value as ServiceType })}
+                className={`${inputCls} bg-white`}
+              >
+                {(Object.keys(SERVICE_LABELS) as ServiceType[]).map((t) => (
+                  <option key={t} value={t}>{SERVICE_LABELS[t].full}</option>
+                ))}
               </select>
             </div>
             <div className="grid grid-cols-3 gap-3">
@@ -290,23 +306,20 @@ export default function Profile() {
           </div>
         )}
 
-        {/* Список маршрутов */}
         {savedRoutes.length === 0 ? (
-          <p className="text-rzd-muted text-sm text-center py-4">
-            Нет сохранённых маршрутов
-          </p>
+          <p className="text-rzd-muted text-sm text-center py-4">Нет сохранённых маршрутов</p>
         ) : (
           <div className="space-y-2">
             {savedRoutes.map((r) => (
               <div key={r.id} className="flex items-center gap-3 border border-rzd-gray-mid rounded-xl px-4 py-3">
                 <div className="w-8 h-8 bg-rzd-gray rounded-lg flex items-center justify-center shrink-0">
-                  <Icon name="MapPin" size={14} className="text-rzd-muted" />
+                  <Icon name={r.serviceType ? SERVICE_LABELS[r.serviceType].icon : "MapPin"} fallback="MapPin" size={14} className="text-rzd-muted" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="font-semibold text-sm text-rzd-dark truncate">{r.name}</div>
-                  <div className="text-xs text-rzd-muted truncate">
-                    {r.station.split("—").pop()?.trim()} · поезд {r.train}, вагон {r.wagon} · {bagsLabel(r.bags)}
-                  </div>
+                  <p className="font-semibold text-sm text-rzd-dark truncate">{r.name}</p>
+                  <p className="text-xs text-rzd-muted truncate">
+                    {r.station.split("—").pop()?.trim()} · поезд {r.train}, вагон {r.wagon} · {bagsWord(r.bags)}
+                  </p>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   <a
