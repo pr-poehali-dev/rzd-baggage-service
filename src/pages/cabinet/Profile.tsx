@@ -1,192 +1,339 @@
-import { useState } from "react";
-import { useAuth } from "@/context/AuthContext";
+import { useState, useRef } from "react";
+import { useAuth, SavedRoute } from "@/context/AuthContext";
 import Icon from "@/components/ui/icon";
 
+const inputCls = "w-full border border-rzd-gray-mid rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-rzd-red transition-colors bg-white placeholder:text-rzd-muted/60 disabled:bg-rzd-gray disabled:text-rzd-muted";
+const labelCls = "text-xs font-medium text-rzd-muted block mb-1.5";
+
+const stations = [
+  "Москва — Ленинградский вокзал",
+  "Москва — Казанский вокзал",
+  "Москва — Ярославский вокзал",
+  "Москва — Павелецкий вокзал",
+  "Москва — Киевский вокзал",
+  "Москва — Курский вокзал",
+  "Санкт-Петербург — Московский вокзал",
+  "Санкт-Петербург — Витебский вокзал",
+  "Санкт-Петербург — Финляндский вокзал",
+  "Сочи — Главный вокзал",
+  "Другой вокзал",
+];
+
+function bagsLabel(n: number) {
+  if (n === 1) return "1 место";
+  if (n < 5)   return `${n} места`;
+  return `${n} мест`;
+}
+
 export default function Profile() {
-  const { user, updateUser, logout } = useAuth();
+  const { user, orders, savedRoutes, updateUser, addRoute, deleteRoute, logout } = useAuth();
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  // Форма профиля
   const [editing, setEditing] = useState(false);
-  const [name, setName] = useState(user?.name || "");
-  const [email, setEmail] = useState(user?.email || "");
-  const [emergency, setEmergency] = useState(user?.emergencyContact || "");
+  const [form, setForm] = useState({
+    lastName:   user?.lastName   ?? "",
+    firstName:  user?.firstName  ?? "",
+    middleName: user?.middleName ?? "",
+    email:      user?.email      ?? "",
+  });
   const [saved, setSaved] = useState(false);
+
+  // Форма нового маршрута
+  const [showRouteForm, setShowRouteForm] = useState(false);
+  const [newRoute, setNewRoute] = useState<Omit<SavedRoute, "id">>({
+    name: "", station: "", train: "", wagon: "", bags: 1,
+  });
+  const [routeError, setRouteError] = useState("");
 
   if (!user) return null;
 
+  const initials = `${user.lastName.charAt(0)}${user.firstName.charAt(0)}`;
+
   const handleSave = () => {
-    updateUser({ name, email, emergencyContact: emergency });
+    if (!form.lastName.trim() || !form.firstName.trim()) return;
+    updateUser(form);
     setEditing(false);
     setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+    setTimeout(() => setSaved(false), 2500);
   };
 
-  const togglePref = (key: keyof typeof user.preferences) => {
-    updateUser({ preferences: { ...user.preferences, [key]: !user.preferences[key] } });
+  const handlePhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => updateUser({ photo: reader.result as string });
+    reader.readAsDataURL(file);
   };
 
-  const inputCls = "w-full border border-rzd-gray-mid rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-rzd-red transition-colors bg-white disabled:bg-rzd-gray disabled:text-rzd-muted";
+  const handleAddRoute = () => {
+    if (!newRoute.name.trim() || !newRoute.station || !newRoute.train.trim() || !newRoute.wagon.trim()) {
+      setRouteError("Заполните все обязательные поля");
+      return;
+    }
+    addRoute(newRoute);
+    setNewRoute({ name: "", station: "", train: "", wagon: "", bags: 1 });
+    setShowRouteForm(false);
+    setRouteError("");
+  };
+
+  const completedOrders = orders.filter((o) => o.status === "completed");
+  const totalSpent = completedOrders.reduce((s, o) => s + o.price, 0);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
+
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-black text-rzd-dark mb-1">Профиль</h1>
           <p className="text-rzd-muted text-sm">Личные данные и настройки</p>
         </div>
         {saved && (
-          <div className="flex items-center gap-2 bg-green-50 text-green-700 border border-green-200 text-xs font-semibold px-3 py-2 rounded-xl">
+          <div className="flex items-center gap-1.5 bg-green-50 border border-green-200 text-green-700 text-xs font-semibold px-3 py-2 rounded-xl">
             <Icon name="Check" size={13} />
-            Сохранено
+            Данные сохранены
           </div>
         )}
       </div>
 
-      {/* Аватар и базовая инфо */}
-      <div className="bg-white rounded-2xl border border-rzd-gray-mid p-6 flex items-center gap-5">
-        <div className="w-16 h-16 bg-rzd-red rounded-2xl flex items-center justify-center text-white font-black text-2xl shrink-0">
-          {user.name.charAt(0)}
+      {/* Аватар + имя */}
+      <div className="bg-white rounded-2xl border border-rzd-gray-mid p-5">
+        <div className="flex items-center gap-4">
+          {/* Фото */}
+          <div className="relative shrink-0">
+            {user.photo ? (
+              <img src={user.photo} className="w-16 h-16 rounded-2xl object-cover" alt="Фото профиля" />
+            ) : (
+              <div className="w-16 h-16 bg-rzd-red rounded-2xl flex items-center justify-center text-white font-black text-2xl">
+                {initials}
+              </div>
+            )}
+            <button
+              onClick={() => fileRef.current?.click()}
+              className="absolute -bottom-1.5 -right-1.5 w-6 h-6 bg-rzd-dark rounded-lg flex items-center justify-center hover:bg-rzd-red transition-colors"
+              title="Изменить фото"
+            >
+              <Icon name="Camera" size={12} className="text-white" />
+            </button>
+            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handlePhoto} />
+          </div>
+
+          <div className="flex-1 min-w-0">
+            <div className="font-black text-rzd-dark text-lg leading-tight">
+              {user.lastName} {user.firstName} {user.middleName}
+            </div>
+            <div className="text-rzd-muted text-sm">{user.phone}</div>
+            {user.email && <div className="text-rzd-muted text-sm">{user.email}</div>}
+          </div>
+
+          <button
+            onClick={() => { setEditing(!editing); if (editing) setForm({ lastName: user.lastName, firstName: user.firstName, middleName: user.middleName, email: user.email }); }}
+            className="flex items-center gap-1.5 border border-rzd-gray-mid text-rzd-dark text-xs font-semibold px-3 py-2 rounded-lg hover:border-rzd-red transition-colors shrink-0"
+          >
+            <Icon name={editing ? "X" : "Pencil"} size={13} />
+            {editing ? "Отмена" : "Изменить"}
+          </button>
         </div>
-        <div className="flex-1 min-w-0">
-          <div className="font-black text-rzd-dark text-lg">{user.name}</div>
-          <div className="text-rzd-muted text-sm">{user.phone}</div>
-          {user.email && <div className="text-rzd-muted text-sm">{user.email}</div>}
-        </div>
-        <button
-          onClick={() => setEditing(!editing)}
-          className="flex items-center gap-1.5 text-xs font-semibold text-rzd-red border border-rzd-red/30 bg-rzd-red/5 px-3 py-2 rounded-lg hover:bg-rzd-red/10 transition-colors"
-        >
-          <Icon name={editing ? "X" : "Pencil"} size={13} />
-          {editing ? "Отмена" : "Изменить"}
-        </button>
       </div>
 
-      {/* Редактирование */}
+      {/* Форма редактирования */}
       {editing && (
-        <div className="bg-white rounded-2xl border border-rzd-gray-mid p-6 space-y-4">
+        <div className="bg-white rounded-2xl border border-rzd-gray-mid p-5 space-y-4">
           <h3 className="font-bold text-rzd-dark">Личные данные</h3>
-          <div className="grid sm:grid-cols-2 gap-4">
+          <div>
+            <label className={labelCls}>Фамилия <span className="text-rzd-red">*</span></label>
+            <input value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} className={inputCls} placeholder="Петров" />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-semibold text-rzd-muted uppercase tracking-wide block mb-2">Имя и фамилия</label>
-              <input value={name} onChange={(e) => setName(e.target.value)} className={inputCls} />
+              <label className={labelCls}>Имя <span className="text-rzd-red">*</span></label>
+              <input value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} className={inputCls} placeholder="Иван" />
             </div>
             <div>
-              <label className="text-xs font-semibold text-rzd-muted uppercase tracking-wide block mb-2">Телефон</label>
+              <label className={labelCls}>Отчество</label>
+              <input value={form.middleName} onChange={(e) => setForm({ ...form, middleName: e.target.value })} className={inputCls} placeholder="Сергеевич" />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className={labelCls}>Телефон</label>
               <input value={user.phone} disabled className={inputCls} />
             </div>
             <div>
-              <label className="text-xs font-semibold text-rzd-muted uppercase tracking-wide block mb-2">Email</label>
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="example@mail.ru" className={inputCls} />
-            </div>
-            <div>
-              <label className="text-xs font-semibold text-rzd-muted uppercase tracking-wide block mb-2">
-                Контакт для экстренной связи
-              </label>
-              <input value={emergency} onChange={(e) => setEmergency(e.target.value)} placeholder="+7 (999) 000-00-00" className={inputCls} />
-              <p className="text-xs text-rzd-muted mt-1.5 leading-relaxed">
-                Уведомим этого человека, если вы опаздываете на поезд
-              </p>
+              <label className={labelCls}>Электронная почта</label>
+              <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className={inputCls} placeholder="example@mail.ru" />
             </div>
           </div>
           <button
             onClick={handleSave}
-            className="flex items-center gap-2 bg-rzd-red text-white font-bold text-sm px-5 py-2.5 rounded-xl hover:bg-rzd-red-dark transition-colors"
+            disabled={!form.lastName.trim() || !form.firstName.trim()}
+            className="flex items-center gap-2 bg-rzd-red hover:bg-rzd-red-dark disabled:opacity-50 text-white font-bold text-sm px-5 py-2.5 rounded-lg transition-colors"
           >
             <Icon name="Check" size={15} />
-            Сохранить изменения
+            Сохранить
           </button>
         </div>
       )}
 
-      {/* Особые потребности */}
-      <div className="bg-white rounded-2xl border border-rzd-gray-mid p-6">
-        <h3 className="font-bold text-rzd-dark mb-4">Особые потребности</h3>
-        <div className="space-y-3">
-          {[
-            { key: "stroller" as const, icon: "Baby", label: "Помощь с коляской", desc: "Носильщик поможет с детской коляской" },
-            { key: "signBoard" as const, icon: "FileText", label: "Встреча с табличкой", desc: "Носильщик будет держать табличку с вашим именем" },
-            { key: "pet" as const, icon: "Heart", label: "Животное в переноске", desc: "Учтём питомца при подборе носильщика" },
-          ].map((pref) => (
-            <div
-              key={pref.key}
-              className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${
-                user.preferences[pref.key]
-                  ? "border-rzd-red bg-rzd-red/5"
-                  : "border-rzd-gray-mid hover:border-rzd-red/30"
-              }`}
-              onClick={() => togglePref(pref.key)}
-            >
-              <div className="flex items-center gap-3">
-                <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${user.preferences[pref.key] ? "bg-rzd-red/10" : "bg-rzd-gray"}`}>
-                  <Icon name={pref.icon} fallback="Star" size={16} className={user.preferences[pref.key] ? "text-rzd-red" : "text-rzd-muted"} />
-                </div>
-                <div>
-                  <div className="font-semibold text-rzd-dark text-sm">{pref.label}</div>
-                  <div className="text-xs text-rzd-muted">{pref.desc}</div>
-                </div>
-              </div>
-              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${user.preferences[pref.key] ? "border-rzd-red bg-rzd-red" : "border-rzd-gray-mid"}`}>
-                {user.preferences[pref.key] && <Icon name="Check" size={11} className="text-white" />}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Бонусная программа */}
-      <div className="bg-gradient-to-br from-rzd-dark to-[#2a2a2a] rounded-2xl p-6 text-white">
-        <div className="flex items-center justify-between mb-5">
-          <div>
-            <div className="text-white/60 text-xs uppercase tracking-wide mb-1">Бонусная программа</div>
-            <div className="text-3xl font-black">{user.bonusPoints} баллов</div>
-          </div>
-          <div className="w-12 h-12 bg-rzd-red rounded-2xl flex items-center justify-center">
-            <Icon name="Star" size={22} className="text-white" />
-          </div>
-        </div>
-        <div className="bg-white/10 rounded-xl h-2 mb-3">
-          <div
-            className="bg-rzd-red h-2 rounded-xl transition-all"
-            style={{ width: `${Math.min((user.bonusPoints / 1000) * 100, 100)}%` }}
-          />
-        </div>
-        <div className="flex items-center justify-between text-xs">
-          <span className="text-white/50">1 заказ = 50 баллов · 1 балл = 1 ₽</span>
-          <span className="text-white/70">{user.bonusPoints} / 1000 до след. уровня</span>
-        </div>
-      </div>
-
-      {/* Способы оплаты */}
-      <div className="bg-white rounded-2xl border border-rzd-gray-mid p-6">
+      {/* История заказов */}
+      <div className="bg-white rounded-2xl border border-rzd-gray-mid p-5">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-bold text-rzd-dark">Способы оплаты</h3>
-          <button className="flex items-center gap-1.5 text-xs text-rzd-red font-semibold hover:underline">
-            <Icon name="Plus" size={13} />
-            Добавить карту
+          <h3 className="font-bold text-rzd-dark">История заказов</h3>
+          <div className="text-xs text-rzd-muted">{completedOrders.length} поездок · {totalSpent.toLocaleString("ru-RU")} ₽</div>
+        </div>
+
+        {completedOrders.length === 0 ? (
+          <p className="text-rzd-muted text-sm text-center py-4">Заказов пока нет</p>
+        ) : (
+          <div className="space-y-2">
+            {completedOrders.slice(0, 3).map((o) => (
+              <div key={o.id} className="flex items-center justify-between border border-rzd-gray-mid rounded-xl px-4 py-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-8 h-8 bg-rzd-gray rounded-lg flex items-center justify-center shrink-0">
+                    <Icon name="Luggage" fallback="Package" size={14} className="text-rzd-muted" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="font-semibold text-sm text-rzd-dark">{o.id}</div>
+                    <div className="text-xs text-rzd-muted truncate">
+                      {o.date} · {o.station.split("—").pop()?.trim()} · {bagsLabel(o.bags)}
+                    </div>
+                  </div>
+                </div>
+                <span className="font-black text-rzd-red text-sm shrink-0 ml-3">{o.price.toLocaleString("ru-RU")} ₽</span>
+              </div>
+            ))}
+            {completedOrders.length > 3 && (
+              <p className="text-center text-xs text-rzd-muted pt-1">
+                И ещё {completedOrders.length - 3} {completedOrders.length - 3 === 1 ? "заказ" : "заказа"}
+              </p>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Мои маршруты */}
+      <div className="bg-white rounded-2xl border border-rzd-gray-mid p-5">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="font-bold text-rzd-dark">Мои маршруты</h3>
+            <p className="text-xs text-rzd-muted mt-0.5">Сохранённые шаблоны для быстрого заказа</p>
+          </div>
+          <button
+            onClick={() => setShowRouteForm(!showRouteForm)}
+            className="flex items-center gap-1.5 text-xs font-semibold text-rzd-red border border-rzd-red/30 bg-rzd-red/5 hover:bg-rzd-red/10 px-3 py-2 rounded-lg transition-colors"
+          >
+            <Icon name={showRouteForm ? "X" : "Plus"} size={13} />
+            {showRouteForm ? "Отмена" : "Добавить"}
           </button>
         </div>
-        <div className="space-y-2">
-          {user.savedCards.map((card) => (
-            <div key={card.id} className="flex items-center justify-between border border-rzd-gray-mid rounded-xl p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-7 bg-rzd-gray rounded-lg flex items-center justify-center">
-                  <Icon name="CreditCard" size={16} className="text-rzd-muted" />
-                </div>
-                <div>
-                  <div className="font-semibold text-rzd-dark text-sm">{card.brand} •••• {card.last4}</div>
-                  <div className="text-xs text-rzd-muted">Сохранённая карта</div>
+
+        {/* Форма нового маршрута */}
+        {showRouteForm && (
+          <div className="border border-rzd-gray-mid rounded-xl p-4 mb-4 space-y-3 bg-rzd-gray/30">
+            <h4 className="font-semibold text-rzd-dark text-sm">Новый маршрут</h4>
+            <div>
+              <label className={labelCls}>Название маршрута <span className="text-rzd-red">*</span></label>
+              <input
+                placeholder='Например: "Домой в Казань"'
+                value={newRoute.name}
+                onChange={(e) => setNewRoute({ ...newRoute, name: e.target.value })}
+                className={inputCls}
+              />
+            </div>
+            <div>
+              <label className={labelCls}>Вокзал <span className="text-rzd-red">*</span></label>
+              <select
+                value={newRoute.station}
+                onChange={(e) => setNewRoute({ ...newRoute, station: e.target.value })}
+                className={`${inputCls} bg-white`}
+              >
+                <option value="">Выберите вокзал</option>
+                {stations.map((s) => <option key={s}>{s}</option>)}
+              </select>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <div>
+                <label className={labelCls}>Поезд <span className="text-rzd-red">*</span></label>
+                <input
+                  placeholder="020А"
+                  value={newRoute.train}
+                  onChange={(e) => setNewRoute({ ...newRoute, train: e.target.value })}
+                  className={inputCls}
+                />
+              </div>
+              <div>
+                <label className={labelCls}>Вагон <span className="text-rzd-red">*</span></label>
+                <input
+                  placeholder="5"
+                  value={newRoute.wagon}
+                  onChange={(e) => setNewRoute({ ...newRoute, wagon: e.target.value })}
+                  className={inputCls}
+                />
+              </div>
+              <div>
+                <label className={labelCls}>Мест</label>
+                <div className="flex items-center border border-rzd-gray-mid rounded-lg overflow-hidden bg-white">
+                  <button type="button" onClick={() => setNewRoute({ ...newRoute, bags: Math.max(1, newRoute.bags - 1) })} className="px-2.5 py-2 text-rzd-red font-bold hover:bg-rzd-gray transition-colors">−</button>
+                  <div className="flex-1 text-center text-sm font-bold text-rzd-dark border-x border-rzd-gray-mid py-2">{newRoute.bags}</div>
+                  <button type="button" onClick={() => setNewRoute({ ...newRoute, bags: newRoute.bags + 1 })} className="px-2.5 py-2 text-rzd-red font-bold hover:bg-rzd-gray transition-colors">+</button>
                 </div>
               </div>
-              <button className="text-rzd-muted hover:text-rzd-red transition-colors">
-                <Icon name="Trash2" size={15} />
-              </button>
             </div>
-          ))}
-        </div>
+            {routeError && <p className="text-rzd-red text-xs">{routeError}</p>}
+            <button
+              onClick={handleAddRoute}
+              className="flex items-center gap-2 bg-rzd-red hover:bg-rzd-red-dark text-white font-bold text-sm px-4 py-2.5 rounded-lg transition-colors"
+            >
+              <Icon name="Check" size={14} />
+              Сохранить маршрут
+            </button>
+          </div>
+        )}
+
+        {/* Список маршрутов */}
+        {savedRoutes.length === 0 ? (
+          <p className="text-rzd-muted text-sm text-center py-4">
+            Нет сохранённых маршрутов
+          </p>
+        ) : (
+          <div className="space-y-2">
+            {savedRoutes.map((r) => (
+              <div key={r.id} className="flex items-center gap-3 border border-rzd-gray-mid rounded-xl px-4 py-3">
+                <div className="w-8 h-8 bg-rzd-gray rounded-lg flex items-center justify-center shrink-0">
+                  <Icon name="MapPin" size={14} className="text-rzd-muted" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-semibold text-sm text-rzd-dark truncate">{r.name}</div>
+                  <div className="text-xs text-rzd-muted truncate">
+                    {r.station.split("—").pop()?.trim()} · поезд {r.train}, вагон {r.wagon} · {bagsLabel(r.bags)}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <a
+                    href="/#order"
+                    className="flex items-center gap-1 bg-rzd-red/10 text-rzd-red text-xs font-semibold px-2.5 py-1.5 rounded-lg hover:bg-rzd-red/20 transition-colors"
+                  >
+                    <Icon name="Play" size={11} />
+                    Заказать
+                  </a>
+                  <button
+                    onClick={() => deleteRoute(r.id)}
+                    className="w-7 h-7 flex items-center justify-center text-rzd-muted hover:text-rzd-red transition-colors"
+                    title="Удалить маршрут"
+                  >
+                    <Icon name="Trash2" size={14} />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Выход */}
       <button
         onClick={logout}
-        className="w-full flex items-center justify-center gap-2 border border-red-200 text-red-500 hover:bg-red-50 font-semibold text-sm py-3.5 rounded-2xl transition-colors"
+        className="w-full flex items-center justify-center gap-2 border border-rzd-gray-mid text-rzd-muted hover:border-red-300 hover:text-red-500 font-semibold text-sm py-3.5 rounded-2xl transition-colors"
       >
         <Icon name="LogOut" size={16} />
         Выйти из аккаунта

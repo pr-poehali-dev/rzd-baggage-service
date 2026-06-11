@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import Icon from "@/components/ui/icon";
 
 const steps = [
@@ -77,13 +78,22 @@ export default function Index() {
               <div className="text-xs text-rzd-muted leading-tight">багажа на вокзалах</div>
             </div>
           </div>
-          <a
-            href="tel:+78001000888"
-            className="flex items-center gap-2 text-rzd-red font-semibold text-sm hover:opacity-80 transition-opacity"
-          >
-            <Icon name="Phone" size={16} />
-            8 800 100-08-88
-          </a>
+          <div className="flex items-center gap-3">
+            <a
+              href="tel:+78001000888"
+              className="hidden sm:flex items-center gap-2 text-rzd-red font-semibold text-sm hover:opacity-80 transition-opacity"
+            >
+              <Icon name="Phone" size={16} />
+              8 800 100-08-88
+            </a>
+            <Link
+              to="/cabinet/login"
+              className="flex items-center gap-1.5 border border-rzd-gray-mid text-rzd-dark font-semibold text-sm px-3 py-2 rounded-lg hover:border-rzd-red transition-colors"
+            >
+              <Icon name="User" size={15} />
+              <span className="hidden sm:inline">Личный кабинет</span>
+            </Link>
+          </div>
         </div>
       </header>
 
