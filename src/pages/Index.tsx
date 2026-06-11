@@ -55,7 +55,15 @@ export default function Index() {
     train: "",
     bags: "1",
     sign: "",
+    serviceType: "",
   });
+
+  const serviceTypes = [
+    { value: "station_to_taxi",  label: "С вокзала — до такси или выхода" },
+    { value: "station_to_point", label: "С вокзала — до любой точки на территории" },
+    { value: "city_to_wagon",    label: "Из города / дома — до вагона" },
+    { value: "city_to_point",    label: "Из города / дома — до точки на вокзале" },
+  ];
   const [submitted, setSubmitted] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -159,6 +167,31 @@ export default function Index() {
                   <h2 className="text-xl font-bold mb-1">Заказать носильщика</h2>
                   <p className="text-rzd-muted text-sm mb-6">Заполните форму и оплатите картой</p>
                   <form onSubmit={handleSubmit} className="space-y-4">
+                    <div>
+                      <label className="text-xs font-medium text-rzd-muted block mb-1.5">Тип услуги</label>
+                      <div className="grid grid-cols-1 gap-2">
+                        {serviceTypes.map((s) => (
+                          <label
+                            key={s.value}
+                            className={`flex items-center gap-3 border rounded-lg px-3 py-2.5 cursor-pointer transition-colors ${
+                              form.serviceType === s.value
+                                ? "border-rzd-red bg-rzd-red/5"
+                                : "border-rzd-gray-mid hover:border-rzd-red/50"
+                            }`}
+                          >
+                            <input
+                              type="radio"
+                              name="serviceType"
+                              value={s.value}
+                              checked={form.serviceType === s.value}
+                              onChange={(e) => setForm({ ...form, serviceType: e.target.value })}
+                              className="accent-rzd-red"
+                            />
+                            <span className="text-sm text-rzd-dark">{s.label}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
                         <label className="text-xs font-medium text-rzd-muted block mb-1.5">Ваше имя</label>

@@ -9,6 +9,7 @@ import Login from "./pages/cabinet/Login";
 import Dashboard from "./pages/cabinet/Dashboard";
 import Orders from "./pages/cabinet/Orders";
 import Profile from "./pages/cabinet/Profile";
+import CabinetPreview from "./pages/cabinet/Preview";
 import CabinetLayout from "./layouts/CabinetLayout";
 import { AuthProvider } from "./context/AuthContext";
 
@@ -24,6 +25,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/cabinet/login" element={<Login />} />
+            <Route path="/cabinet/preview" element={<CabinetPreview />} />
             <Route path="/cabinet" element={<CabinetLayout />}>
               <Route index element={<Dashboard />} />
               <Route path="orders" element={<Orders />} />
