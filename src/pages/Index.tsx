@@ -2,74 +2,324 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import Icon from "@/components/ui/icon";
 
-const steps = [
-  {
-    number: "01",
-    title: "Оставьте заявку",
-    desc: "Укажите дату, время, вокзал, поезд и количество мест багажа в форме",
-  },
-  {
-    number: "02",
-    title: "Оплатите картой",
-    desc: "Оплатите услугу банковской картой онлайн сразу при оформлении заявки",
-  },
-  {
-    number: "03",
-    title: "Встреча с носильщиком",
-    desc: "Носильщик встретит вас в указанном месте с табличкой с вашим именем",
-  },
-  {
-    number: "04",
-    title: "Доставка багажа",
-    desc: "Носильщик доставит вещи до вагона, такси или выхода с вокзала",
-  },
+// ─── Данные для режима ЖД ────────────────────────────────────────────────────
+
+const rzhdStations = [
+  "Москва — Ленинградский вокзал",
+  "Москва — Казанский вокзал",
+  "Москва — Ярославский вокзал",
+  "Москва — Павелецкий вокзал",
+  "Москва — Киевский вокзал",
+  "Москва — Курский вокзал",
+  "Санкт-Петербург — Московский вокзал",
+  "Санкт-Петербург — Витебский вокзал",
+  "Санкт-Петербург — Финляндский вокзал",
+  "Сочи — Главный вокзал",
+  "Другой вокзал",
 ];
 
-const benefits = [
-  {
-    icon: "Package",
-    title: "Без ограничений по багажу",
-    desc: "Принимаем чемоданы, сумки и крупногабаритный груз — любое количество мест",
-    detail: "Любой объём",
-  },
-  {
-    icon: "CreditCard",
-    title: "Оплата картой",
-    desc: "Оплата банковской картой онлайн при оформлении заявки — быстро и безопасно",
-    detail: "Visa / Mastercard / МИР",
-  },
-  {
-    icon: "Clock",
-    title: "Работаем 24/7",
-    desc: "Сервис доступен круглосуточно на всех крупных вокзалах страны",
-    detail: "365 дней в году",
-  },
+const rzhdServices = [
+  { icon: "Car",        label: "С вокзала — до такси или выхода",        value: "station_to_taxi" },
+  { icon: "MapPin",     label: "С вокзала — до любой точки на территории", value: "station_to_point" },
+  { icon: "Home",       label: "Из города / дома — до вагона",            value: "city_to_wagon" },
+  { icon: "Navigation", label: "Из города / дома — до точки на вокзале",  value: "city_to_point" },
 ];
+
+const rzhdSteps = [
+  { number: "01", title: "Оставьте заявку",       desc: "Укажите вокзал, поезд, вагон, дату и количество мест багажа" },
+  { number: "02", title: "Оплатите онлайн",        desc: "Оплата банковской картой при оформлении заявки" },
+  { number: "03", title: "Встреча с носильщиком",  desc: "Носильщик встретит вас с табличкой в указанном месте" },
+  { number: "04", title: "Доставка до места",      desc: "Вещи доставят до вагона, такси или любой точки на территории" },
+];
+
+const rzhdBenefits = [
+  { icon: "Package",    title: "Любой багаж",         desc: "Чемоданы, сумки, крупногабаритный груз — без ограничений по количеству мест", detail: "Без ограничений" },
+  { icon: "CreditCard", title: "Оплата картой",        desc: "Visa, Mastercard, МИР — быстро и безопасно онлайн при оформлении", detail: "Visa / МИР" },
+  { icon: "Clock",      title: "Работаем 24/7",        desc: "Сервис доступен круглосуточно на всех крупных вокзалах страны", detail: "365 дней в году" },
+];
+
+const rzhdStats = [
+  { label: "Стоимость",    value: "от 500 ₽",    sub: "за 1 место" },
+  { label: "Зона работы",  value: "Весь вокзал", sub: "включая перроны" },
+  { label: "Отмена",       value: "за 15 мин",   sub: "полный возврат" },
+];
+
+// ─── Данные для режима Авиа ──────────────────────────────────────────────────
+
+const aviaAirports = [
+  "Москва — Шереметьево (SVO)",
+  "Москва — Домодедово (DME)",
+  "Москва — Внуково (VKO)",
+  "Санкт-Петербург — Пулково (LED)",
+  "Сочи — Адлер (AER)",
+  "Екатеринбург — Кольцово (SVX)",
+  "Казань (KZN)",
+  "Новосибирск — Толмачёво (OVB)",
+  "Другой аэропорт",
+];
+
+const aviaServices = [
+  { icon: "PlaneLanding", label: "С самолёта — до выхода / такси",           value: "arrival_to_exit" },
+  { icon: "MapPin",       label: "По территории аэропорта",                   value: "airport_point" },
+  { icon: "PlaneTakeoff", label: "Из города / дома — до стойки регистрации", value: "home_to_checkin" },
+  { icon: "Navigation",   label: "Из города — до любой точки в аэропорту",   value: "home_to_point" },
+];
+
+const aviaMeetPoints = [
+  "Зона прилёта (терминал A)",
+  "Зона прилёта (терминал B)",
+  "Зона прилёта (терминал C)",
+  "Стойка регистрации",
+  "Вход в терминал",
+  "Парковка P1",
+  "Остановка такси",
+];
+
+const aviaSteps = [
+  { number: "01", title: "Оставьте заявку",        desc: "Укажите аэропорт, номер рейса, дату и точку встречи" },
+  { number: "02", title: "Оплатите онлайн",         desc: "Оплата банковской картой при оформлении заявки" },
+  { number: "03", title: "Носильщик вас встретит",  desc: "Сотрудник встретит вас с табличкой в указанной точке аэропорта" },
+  { number: "04", title: "Доставка до места",       desc: "Вещи доставят до выхода, такси, стойки регистрации или вашего гейта" },
+];
+
+const aviaBenefits = [
+  { icon: "Package",    title: "Любой багаж",           desc: "Чемоданы, сумки, спортивный инвентарь, детские коляски — без ограничений", detail: "Без ограничений" },
+  { icon: "CreditCard", title: "Оплата онлайн",          desc: "Visa, Mastercard, МИР — быстро и безопасно при оформлении заявки",        detail: "Visa / МИР" },
+  { icon: "ShieldCheck", title: "Безопасно и надёжно",   desc: "Все носильщики прошли проверку, работают в зоне аэропорта официально",   detail: "Проверенные сотрудники" },
+];
+
+const aviaStats = [
+  { label: "Стоимость",   value: "от 600 ₽",    sub: "за 1 место" },
+  { label: "Зона работы", value: "Весь аэропорт", sub: "включая терминалы" },
+  { label: "Отмена",      value: "за 30 мин",   sub: "полный возврат" },
+];
+
+// ─── Компоненты ─────────────────────────────────────────────────────────────
+
+const inputCls = "w-full border border-rzd-gray-mid rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-rzd-red transition-colors bg-white";
+const labelCls = "text-xs font-medium text-rzd-muted block mb-1.5";
+
+function BagsCounter({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  return (
+    <div className="flex items-center border border-rzd-gray-mid rounded-lg overflow-hidden bg-white">
+      <button type="button" onClick={() => onChange(String(Math.max(1, Number(value) - 1)))}
+        className="px-3 py-2.5 text-rzd-red hover:bg-rzd-gray transition-colors font-bold text-lg leading-none">−</button>
+      <div className="flex-1 text-center text-sm font-bold text-rzd-dark py-2.5 border-x border-rzd-gray-mid">{value}</div>
+      <button type="button" onClick={() => onChange(String(Number(value) + 1))}
+        className="px-3 py-2.5 text-rzd-red hover:bg-rzd-gray transition-colors font-bold text-lg leading-none">+</button>
+    </div>
+  );
+}
+
+function SuccessBlock({ onReset }: { onReset: () => void }) {
+  return (
+    <div className="text-center py-8">
+      <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <Icon name="CheckCircle" size={32} className="text-green-600" />
+      </div>
+      <h3 className="text-xl font-bold mb-2">Заявка принята!</h3>
+      <p className="text-rzd-muted text-sm">Носильщик встретит вас с табличкой в указанном месте</p>
+      <button onClick={onReset} className="mt-6 text-rzd-red text-sm font-medium hover:underline">
+        Отправить ещё одну заявку
+      </button>
+    </div>
+  );
+}
+
+// ─── Форма: ЖД ──────────────────────────────────────────────────────────────
+function RzhdForm() {
+  const [form, setForm] = useState({ name: "", phone: "", date: "", station: "", train: "", bags: "1", sign: "", serviceType: "" });
+  const [submitted, setSubmitted] = useState(false);
+  const f = (k: string, v: string) => setForm(p => ({ ...p, [k]: v }));
+
+  if (submitted) return <SuccessBlock onReset={() => setSubmitted(false)} />;
+
+  return (
+    <>
+      <h2 className="text-xl font-bold mb-1">Заказать носильщика</h2>
+      <p className="text-rzd-muted text-sm mb-5">Заполните форму и оплатите картой</p>
+      <form onSubmit={e => { e.preventDefault(); setSubmitted(true); }} className="space-y-4">
+
+        {/* Тип услуги */}
+        <div>
+          <label className={labelCls}>Тип услуги</label>
+          <div className="space-y-1.5">
+            {rzhdServices.map(s => (
+              <label key={s.value} className={`flex items-center gap-3 border rounded-lg px-3 py-2.5 cursor-pointer transition-colors ${form.serviceType === s.value ? "border-rzd-red bg-rzd-red/5" : "border-rzd-gray-mid hover:border-rzd-red/50"}`}>
+                <input type="radio" name="serviceType" value={s.value} checked={form.serviceType === s.value}
+                  onChange={e => f("serviceType", e.target.value)} className="accent-rzd-red" />
+                <Icon name={s.icon} fallback="Circle" size={14} className="text-rzd-red shrink-0" />
+                <span className="text-sm text-rzd-dark">{s.label}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className={labelCls}>Ваше имя</label>
+            <input type="text" required placeholder="Иван Иванов" value={form.name} onChange={e => f("name", e.target.value)} className={inputCls} />
+          </div>
+          <div>
+            <label className={labelCls}>Телефон</label>
+            <input type="tel" required placeholder="+7 (999) 000-00-00" value={form.phone} onChange={e => f("phone", e.target.value)} className={inputCls} />
+          </div>
+        </div>
+
+        <div>
+          <label className={labelCls}>Вокзал</label>
+          <select required value={form.station} onChange={e => f("station", e.target.value)} className={inputCls}>
+            <option value="">Выберите вокзал</option>
+            {rzhdStations.map(s => <option key={s}>{s}</option>)}
+          </select>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className={labelCls}>Дата и время</label>
+            <input type="datetime-local" required value={form.date} onChange={e => f("date", e.target.value)} className={inputCls} />
+          </div>
+          <div>
+            <label className={labelCls}>Мест багажа</label>
+            <BagsCounter value={form.bags} onChange={v => f("bags", v)} />
+          </div>
+        </div>
+
+        <div>
+          <label className={labelCls}>Номер поезда и вагон</label>
+          <input type="text" required placeholder="Например: № 020А, вагон 5" value={form.train} onChange={e => f("train", e.target.value)} className={inputCls} />
+        </div>
+
+        <div>
+          <label className={labelCls}>Табличка / пожелания (необязательно)</label>
+          <textarea rows={2} placeholder="Текст для таблички носильщика, особые пожелания..." value={form.sign}
+            onChange={e => f("sign", e.target.value)} className={`${inputCls} resize-none`} />
+        </div>
+
+        <div className="bg-rzd-gray rounded-xl px-4 py-3 flex items-center justify-between">
+          <span className="text-sm text-rzd-muted">{form.bags} {Number(form.bags) === 1 ? "место" : Number(form.bags) < 5 ? "места" : "мест"} × 500 ₽</span>
+          <span className="text-xl font-black text-rzd-dark">{(Number(form.bags) * 500).toLocaleString("ru-RU")} ₽</span>
+        </div>
+
+        <button type="submit" className="w-full bg-rzd-red hover:bg-rzd-red-dark text-white font-bold py-3.5 rounded-lg transition-colors text-sm flex items-center justify-center gap-2">
+          <Icon name="CreditCard" size={16} />
+          Оплатить и заказать — {(Number(form.bags) * 500).toLocaleString("ru-RU")} ₽
+        </button>
+        <p className="text-center text-xs text-rzd-muted">
+          Нажимая кнопку, вы соглашаетесь с{" "}
+          <span className="text-rzd-red cursor-pointer hover:underline">политикой обработки данных</span>
+        </p>
+      </form>
+    </>
+  );
+}
+
+// ─── Форма: Авиа ─────────────────────────────────────────────────────────────
+function AviaForm() {
+  const [form, setForm] = useState({ name: "", phone: "", date: "", airport: "", flight: "", meetPoint: "", bags: "1", sign: "", serviceType: "" });
+  const [submitted, setSubmitted] = useState(false);
+  const f = (k: string, v: string) => setForm(p => ({ ...p, [k]: v }));
+
+  if (submitted) return <SuccessBlock onReset={() => setSubmitted(false)} />;
+
+  return (
+    <>
+      <h2 className="text-xl font-bold mb-1">Заказать носильщика</h2>
+      <p className="text-rzd-muted text-sm mb-5">Заполните форму и оплатите картой</p>
+      <form onSubmit={e => { e.preventDefault(); setSubmitted(true); }} className="space-y-4">
+
+        {/* Тип услуги */}
+        <div>
+          <label className={labelCls}>Тип услуги</label>
+          <div className="space-y-1.5">
+            {aviaServices.map(s => (
+              <label key={s.value} className={`flex items-center gap-3 border rounded-lg px-3 py-2.5 cursor-pointer transition-colors ${form.serviceType === s.value ? "border-rzd-red bg-rzd-red/5" : "border-rzd-gray-mid hover:border-rzd-red/50"}`}>
+                <input type="radio" name="aviaService" value={s.value} checked={form.serviceType === s.value}
+                  onChange={e => f("serviceType", e.target.value)} className="accent-rzd-red" />
+                <Icon name={s.icon} fallback="Circle" size={14} className="text-rzd-red shrink-0" />
+                <span className="text-sm text-rzd-dark">{s.label}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className={labelCls}>Ваше имя</label>
+            <input type="text" required placeholder="Иван Иванов" value={form.name} onChange={e => f("name", e.target.value)} className={inputCls} />
+          </div>
+          <div>
+            <label className={labelCls}>Телефон</label>
+            <input type="tel" required placeholder="+7 (999) 000-00-00" value={form.phone} onChange={e => f("phone", e.target.value)} className={inputCls} />
+          </div>
+        </div>
+
+        <div>
+          <label className={labelCls}>Аэропорт</label>
+          <select required value={form.airport} onChange={e => f("airport", e.target.value)} className={inputCls}>
+            <option value="">Выберите аэропорт</option>
+            {aviaAirports.map(a => <option key={a}>{a}</option>)}
+          </select>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className={labelCls}>Дата и время рейса</label>
+            <input type="datetime-local" required value={form.date} onChange={e => f("date", e.target.value)} className={inputCls} />
+          </div>
+          <div>
+            <label className={labelCls}>Номер рейса</label>
+            <input type="text" required placeholder="SU 1234" value={form.flight} onChange={e => f("flight", e.target.value)} className={inputCls} />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className={labelCls}>Точка встречи</label>
+            <select required value={form.meetPoint} onChange={e => f("meetPoint", e.target.value)} className={inputCls}>
+              <option value="">Выберите точку</option>
+              {aviaMeetPoints.map(p => <option key={p}>{p}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className={labelCls}>Мест багажа</label>
+            <BagsCounter value={form.bags} onChange={v => f("bags", v)} />
+          </div>
+        </div>
+
+        <div>
+          <label className={labelCls}>Пожелания / особые условия (необязательно)</label>
+          <textarea rows={2} placeholder="Детская коляска, инвалидное кресло, особые пожелания..." value={form.sign}
+            onChange={e => f("sign", e.target.value)} className={`${inputCls} resize-none`} />
+        </div>
+
+        <div className="bg-rzd-gray rounded-xl px-4 py-3 flex items-center justify-between">
+          <span className="text-sm text-rzd-muted">{form.bags} {Number(form.bags) === 1 ? "место" : Number(form.bags) < 5 ? "места" : "мест"} × 600 ₽</span>
+          <span className="text-xl font-black text-rzd-dark">{(Number(form.bags) * 600).toLocaleString("ru-RU")} ₽</span>
+        </div>
+
+        <button type="submit" className="w-full bg-rzd-red hover:bg-rzd-red-dark text-white font-bold py-3.5 rounded-lg transition-colors text-sm flex items-center justify-center gap-2">
+          <Icon name="CreditCard" size={16} />
+          Оплатить и заказать — {(Number(form.bags) * 600).toLocaleString("ru-RU")} ₽
+        </button>
+        <p className="text-center text-xs text-rzd-muted">
+          Нажимая кнопку, вы соглашаетесь с{" "}
+          <span className="text-rzd-red cursor-pointer hover:underline">политикой обработки данных</span>
+        </p>
+      </form>
+    </>
+  );
+}
+
+// ─── Главная страница ────────────────────────────────────────────────────────
+type Mode = "rzhd" | "avia";
 
 export default function Index() {
-  const [form, setForm] = useState({
-    name: "",
-    phone: "",
-    date: "",
-    station: "",
-    train: "",
-    bags: "1",
-    sign: "",
-    serviceType: "",
-  });
+  const [mode, setMode] = useState<Mode | null>(null);
 
-  const serviceTypes = [
-    { value: "station_to_taxi",  label: "С вокзала — до такси или выхода" },
-    { value: "station_to_point", label: "С вокзала — до любой точки на территории" },
-    { value: "city_to_wagon",    label: "Из города / дома — до вагона" },
-    { value: "city_to_point",    label: "Из города / дома — до точки на вокзале" },
-  ];
-  const [submitted, setSubmitted] = useState(false);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitted(true);
-  };
+  const steps  = mode === "avia" ? aviaSteps    : rzhdSteps;
+  const bens   = mode === "avia" ? aviaBenefits : rzhdBenefits;
+  const stats  = mode === "avia" ? aviaStats    : rzhdStats;
 
   return (
     <div className="font-golos min-h-screen bg-white text-rzd-dark">
@@ -77,27 +327,19 @@ export default function Index() {
       {/* HEADER */}
       <header className="bg-white border-b border-rzd-gray-mid sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="bg-rzd-red text-white font-black text-sm px-3 py-1.5 rounded tracking-widest">
-              РЖД
-            </div>
+          <button onClick={() => setMode(null)} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+            <div className="bg-rzd-red text-white font-black text-sm px-3 py-1.5 rounded tracking-widest">MP</div>
             <div>
-              <div className="font-semibold text-sm leading-tight text-rzd-dark">Сервис переноски</div>
-              <div className="text-xs text-rzd-muted leading-tight">багажа на вокзалах</div>
+              <div className="font-semibold text-sm leading-tight text-rzd-dark">MyPorter</div>
+              <div className="text-xs text-rzd-muted leading-tight">Сервис переноски багажа</div>
             </div>
-          </div>
+          </button>
           <div className="flex items-center gap-3">
-            <a
-              href="tel:+78001000888"
-              className="hidden sm:flex items-center gap-2 text-rzd-red font-semibold text-sm hover:opacity-80 transition-opacity"
-            >
+            <a href="tel:+78001000888" className="hidden sm:flex items-center gap-2 text-rzd-red font-semibold text-sm hover:opacity-80 transition-opacity">
               <Icon name="Phone" size={16} />
               8 800 100-08-88
             </a>
-            <Link
-              to="/cabinet/login"
-              className="flex items-center gap-1.5 border border-rzd-gray-mid text-rzd-dark font-semibold text-sm px-3 py-2 rounded-lg hover:border-rzd-red transition-colors"
-            >
+            <Link to="/cabinet/login" className="flex items-center gap-1.5 border border-rzd-gray-mid text-rzd-dark font-semibold text-sm px-3 py-2 rounded-lg hover:border-rzd-red transition-colors">
               <Icon name="User" size={15} />
               <span className="hidden sm:inline">Личный кабинет</span>
             </Link>
@@ -105,284 +347,287 @@ export default function Index() {
         </div>
       </header>
 
-      {/* HERO */}
-      <section className="bg-rzd-dark text-white relative overflow-hidden">
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-rzd-red rounded-full -translate-y-1/2 translate-x-1/3 opacity-10" />
-          <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-rzd-red rounded-full translate-y-1/2 -translate-x-1/3 opacity-10" />
-        </div>
-        <div className="max-w-6xl mx-auto px-6 py-16 md:py-24 relative">
-          <div className="grid md:grid-cols-2 gap-12 items-start">
-            <div style={{ animation: "slideUp 0.7s ease-out forwards" }}>
+      {/* ═══ ГЛАВНАЯ СТРАНИЦА (без выбора режима) ═══ */}
+      {!mode && (
+        <>
+          {/* HERO — выбор направления */}
+          <section className="bg-rzd-dark text-white relative overflow-hidden">
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <div className="absolute top-0 right-0 w-[700px] h-[700px] bg-rzd-red rounded-full -translate-y-1/2 translate-x-1/3 opacity-10" />
+              <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-rzd-red rounded-full translate-y-1/2 -translate-x-1/3 opacity-10" />
+            </div>
+            <div className="max-w-6xl mx-auto px-6 py-20 md:py-28 relative text-center">
               <div className="inline-flex items-center gap-2 bg-rzd-red/20 border border-rzd-red/40 text-rzd-red-light text-xs font-medium px-3 py-1.5 rounded-full mb-6">
                 <Icon name="MapPin" size={12} />
-                Все крупные вокзалы России
+                Вокзалы и аэропорты по всей России
               </div>
-              <h1 className="text-4xl md:text-5xl font-black leading-tight mb-4">
-                Переноска<br />
-                <span className="text-rzd-red">багажа</span><br />
-                на вокзале
+              <h1 className="text-4xl md:text-6xl font-black leading-tight mb-5">
+                Профессиональная<br />
+                <span className="text-rzd-red">переноска багажа</span>
               </h1>
-              <p className="text-white/70 text-lg leading-relaxed mb-8 max-w-sm">
-                Профессиональные носильщики встретят вас, заберут вещи и доставят куда нужно
+              <p className="text-white/70 text-lg md:text-xl leading-relaxed mb-12 max-w-2xl mx-auto">
+                Носильщики встретят вас, заберут вещи и доставят куда нужно — на вокзале или в аэропорту
               </p>
-              <div className="flex flex-wrap gap-6">
-                <div className="text-center">
-                  <div className="text-2xl font-black text-rzd-red">от 500 ₽</div>
-                  <div className="text-xs text-white/50 mt-0.5">стоимость услуги</div>
-                </div>
-                <div className="w-px bg-white/10" />
-                <div className="text-center">
-                  <div className="text-2xl font-black text-rzd-red">15 мин</div>
-                  <div className="text-xs text-white/50 mt-0.5">до прибытия поезда</div>
-                </div>
-                <div className="w-px bg-white/10" />
-                <div className="text-center">
-                  <div className="text-2xl font-black text-rzd-red">24/7</div>
-                  <div className="text-xs text-white/50 mt-0.5">работа сервиса</div>
-                </div>
+
+              {/* Карточки выбора */}
+              <div className="grid sm:grid-cols-2 gap-5 max-w-2xl mx-auto" id="order">
+                {/* ЖД */}
+                <button
+                  onClick={() => { setMode("rzhd"); setTimeout(() => document.getElementById("order-form")?.scrollIntoView({ behavior: "smooth" }), 100); }}
+                  className="group relative bg-white/5 hover:bg-white/10 border border-white/15 hover:border-rzd-red rounded-2xl p-8 text-left transition-all duration-300 cursor-pointer"
+                >
+                  <div className="w-14 h-14 bg-rzd-red/20 group-hover:bg-rzd-red rounded-2xl flex items-center justify-center mb-5 transition-colors">
+                    <Icon name="Train" size={28} className="text-rzd-red group-hover:text-white transition-colors" />
+                  </div>
+                  <h3 className="text-xl font-black mb-2">Железнодорожный</h3>
+                  <p className="text-white/60 text-sm leading-relaxed mb-5">Помощь с багажом на вокзалах России — до вагона, от поезда, по территории</p>
+                  <div className="flex flex-wrap gap-2">
+                    {["До вагона", "От поезда", "До такси", "По вокзалу"].map(t => (
+                      <span key={t} className="text-xs bg-white/10 text-white/70 px-2.5 py-1 rounded-full">{t}</span>
+                    ))}
+                  </div>
+                  <div className="mt-5 flex items-center gap-1.5 text-rzd-red text-sm font-bold group-hover:gap-3 transition-all">
+                    Выбрать <Icon name="ArrowRight" size={15} />
+                  </div>
+                </button>
+
+                {/* Авиа */}
+                <button
+                  onClick={() => { setMode("avia"); setTimeout(() => document.getElementById("order-form")?.scrollIntoView({ behavior: "smooth" }), 100); }}
+                  className="group relative bg-white/5 hover:bg-white/10 border border-white/15 hover:border-rzd-red rounded-2xl p-8 text-left transition-all duration-300 cursor-pointer"
+                >
+                  <div className="w-14 h-14 bg-rzd-red/20 group-hover:bg-rzd-red rounded-2xl flex items-center justify-center mb-5 transition-colors">
+                    <Icon name="Plane" size={28} className="text-rzd-red group-hover:text-white transition-colors" />
+                  </div>
+                  <h3 className="text-xl font-black mb-2">Авиационный</h3>
+                  <p className="text-white/60 text-sm leading-relaxed mb-5">Помощь с багажом в аэропортах — до стойки регистрации, от самолёта, по терминалам</p>
+                  <div className="flex flex-wrap gap-2">
+                    {["До регистрации", "От самолёта", "До такси", "По терминалу"].map(t => (
+                      <span key={t} className="text-xs bg-white/10 text-white/70 px-2.5 py-1 rounded-full">{t}</span>
+                    ))}
+                  </div>
+                  <div className="mt-5 flex items-center gap-1.5 text-rzd-red text-sm font-bold group-hover:gap-3 transition-all">
+                    Выбрать <Icon name="ArrowRight" size={15} />
+                  </div>
+                </button>
+              </div>
+
+              {/* Цифры */}
+              <div className="flex flex-wrap justify-center gap-8 mt-14">
+                {[
+                  { val: "от 500 ₽", sub: "стоимость услуги" },
+                  { val: "15+ городов", sub: "присутствие сервиса" },
+                  { val: "24/7", sub: "работа сервиса" },
+                ].map((s, i) => (
+                  <div key={i} className="text-center">
+                    <div className="text-2xl font-black text-rzd-red">{s.val}</div>
+                    <div className="text-xs text-white/50 mt-0.5">{s.sub}</div>
+                  </div>
+                ))}
               </div>
             </div>
+          </section>
 
-            {/* Форма */}
-            <div className="bg-white rounded-2xl p-6 md:p-8 shadow-2xl text-rzd-dark">
-              {submitted ? (
-                <div className="text-center py-8">
-                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Icon name="CheckCircle" size={32} className="text-green-600" />
+          {/* КАК ЭТО РАБОТАЕТ — общий */}
+          <section className="py-20 bg-rzd-gray" id="how-it-works">
+            <div className="max-w-6xl mx-auto px-6">
+              <div className="text-center mb-14">
+                <div className="inline-block w-10 h-1 bg-rzd-red mb-4" />
+                <h2 className="text-3xl font-black mb-3">Как работает сервис</h2>
+                <p className="text-rzd-muted max-w-md mx-auto">Один алгоритм — и для вокзала, и для аэропорта</p>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                {[
+                  { number: "01", title: "Выберите тип",       desc: "Железнодорожный или авиационный — и заполните форму" },
+                  { number: "02", title: "Оплатите онлайн",    desc: "Оплата картой при оформлении заявки" },
+                  { number: "03", title: "Встреча с носильщиком", desc: "Носильщик встретит вас с табличкой в указанном месте" },
+                  { number: "04", title: "Доставка до места",   desc: "Вещи доставят до вагона, выхода или любой нужной точки" },
+                ].map((step, i) => (
+                  <div key={i} className="relative text-center group">
+                    <div className="relative inline-flex items-center justify-center w-16 h-16 bg-white rounded-full border-2 border-rzd-gray-mid group-hover:border-rzd-red transition-colors mb-4 mx-auto">
+                      <span className="text-rzd-red font-black text-lg">{step.number}</span>
+                    </div>
+                    <h3 className="font-bold text-sm mb-2 leading-tight">{step.title}</h3>
+                    <p className="text-rzd-muted text-xs leading-relaxed">{step.desc}</p>
                   </div>
-                  <h3 className="text-xl font-bold mb-2">Заявка принята!</h3>
-                  <p className="text-rzd-muted text-sm">
-                    Носильщик встретит вас с табличкой в указанном месте
-                  </p>
-                  <button
-                    onClick={() => setSubmitted(false)}
-                    className="mt-6 text-rzd-red text-sm font-medium hover:underline"
-                  >
-                    Отправить ещё одну заявку
+                ))}
+              </div>
+
+              {/* CTA */}
+              <div className="mt-12 flex flex-col sm:flex-row gap-4 justify-center">
+                <button onClick={() => { setMode("rzhd"); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                  className="flex items-center justify-center gap-2 bg-rzd-dark hover:bg-rzd-dark/80 text-white font-bold px-8 py-4 rounded-xl transition-colors">
+                  <Icon name="Train" size={18} />Заказать на вокзале
+                </button>
+                <button onClick={() => { setMode("avia"); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                  className="flex items-center justify-center gap-2 bg-rzd-red hover:bg-rzd-red-dark text-white font-bold px-8 py-4 rounded-xl transition-colors">
+                  <Icon name="Plane" size={18} />Заказать в аэропорту
+                </button>
+              </div>
+            </div>
+          </section>
+
+          {/* ПРЕИМУЩЕСТВА — общие */}
+          <section className="py-20 bg-white">
+            <div className="max-w-6xl mx-auto px-6">
+              <div className="text-center mb-14">
+                <div className="inline-block w-10 h-1 bg-rzd-red mb-4" />
+                <h2 className="text-3xl font-black mb-3">Условия и преимущества</h2>
+                <p className="text-rzd-muted max-w-md mx-auto">Профессиональный сервис с гарантией безопасности</p>
+              </div>
+              <div className="grid md:grid-cols-3 gap-6">
+                {[
+                  { icon: "Package",     title: "Любой багаж",           desc: "Чемоданы, сумки, крупногабаритный груз, спортивный инвентарь — без ограничений по количеству мест", detail: "Без ограничений" },
+                  { icon: "CreditCard",  title: "Оплата картой",          desc: "Visa, Mastercard, МИР — быстро и безопасно при оформлении заявки онлайн", detail: "Visa / МИР" },
+                  { icon: "ShieldCheck", title: "Безопасно и надёжно",    desc: "Все носильщики прошли проверку и работают официально на территории объекта", detail: "Проверенные сотрудники" },
+                ].map((b, i) => (
+                  <div key={i} className="group border border-rzd-gray-mid rounded-2xl p-8 hover:border-rzd-red hover:shadow-lg transition-all duration-300">
+                    <div className="w-12 h-12 bg-rzd-red/10 rounded-xl flex items-center justify-center mb-6">
+                      <Icon name={b.icon} fallback="ShieldCheck" size={24} className="text-rzd-red" />
+                    </div>
+                    <div className="inline-block bg-rzd-red text-white text-xs font-bold px-2.5 py-1 rounded-full mb-4">{b.detail}</div>
+                    <h3 className="font-bold text-lg mb-3">{b.title}</h3>
+                    <p className="text-rzd-muted text-sm leading-relaxed">{b.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        </>
+      )}
+
+      {/* ═══ РЕЖИМ: ЖД или АВИА ═══ */}
+      {mode && (
+        <>
+          {/* HERO с формой */}
+          <section className="bg-rzd-dark text-white relative overflow-hidden" id="order-form">
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-rzd-red rounded-full -translate-y-1/2 translate-x-1/3 opacity-10" />
+              <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-rzd-red rounded-full translate-y-1/2 -translate-x-1/3 opacity-10" />
+            </div>
+            <div className="max-w-6xl mx-auto px-6 py-14 md:py-20 relative">
+
+              {/* Переключатель вверху */}
+              <div className="flex items-center gap-3 mb-10">
+                <button onClick={() => setMode(null)} className="flex items-center gap-1.5 text-white/50 hover:text-white text-sm transition-colors">
+                  <Icon name="ArrowLeft" size={15} />Все услуги
+                </button>
+                <span className="text-white/20">/</span>
+                <div className="flex bg-white/10 rounded-xl p-1 gap-1">
+                  <button onClick={() => setMode("rzhd")} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${mode === "rzhd" ? "bg-rzd-red text-white" : "text-white/60 hover:text-white"}`}>
+                    <Icon name="Train" size={15} />Вокзал
+                  </button>
+                  <button onClick={() => setMode("avia")} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${mode === "avia" ? "bg-rzd-red text-white" : "text-white/60 hover:text-white"}`}>
+                    <Icon name="Plane" size={15} />Аэропорт
                   </button>
                 </div>
-              ) : (
-                <>
-                  <h2 className="text-xl font-bold mb-1">Заказать носильщика</h2>
-                  <p className="text-rzd-muted text-sm mb-6">Заполните форму и оплатите картой</p>
-                  <form onSubmit={handleSubmit} className="space-y-4">
-                    <div>
-                      <label className="text-xs font-medium text-rzd-muted block mb-1.5">Тип услуги</label>
-                      <div className="grid grid-cols-1 gap-2">
-                        {serviceTypes.map((s) => (
-                          <label
-                            key={s.value}
-                            className={`flex items-center gap-3 border rounded-lg px-3 py-2.5 cursor-pointer transition-colors ${
-                              form.serviceType === s.value
-                                ? "border-rzd-red bg-rzd-red/5"
-                                : "border-rzd-gray-mid hover:border-rzd-red/50"
-                            }`}
-                          >
-                            <input
-                              type="radio"
-                              name="serviceType"
-                              value={s.value}
-                              checked={form.serviceType === s.value}
-                              onChange={(e) => setForm({ ...form, serviceType: e.target.value })}
-                              className="accent-rzd-red"
-                            />
-                            <span className="text-sm text-rzd-dark">{s.label}</span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="text-xs font-medium text-rzd-muted block mb-1.5">Ваше имя</label>
-                        <input
-                          type="text"
-                          required
-                          placeholder="Иван Иванов"
-                          value={form.name}
-                          onChange={(e) => setForm({ ...form, name: e.target.value })}
-                          className="w-full border border-rzd-gray-mid rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-rzd-red transition-colors"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-xs font-medium text-rzd-muted block mb-1.5">Телефон</label>
-                        <input
-                          type="tel"
-                          required
-                          placeholder="+7 (999) 000-00-00"
-                          value={form.phone}
-                          onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                          className="w-full border border-rzd-gray-mid rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-rzd-red transition-colors"
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="text-xs font-medium text-rzd-muted block mb-1.5">Вокзал</label>
-                      <select
-                        required
-                        value={form.station}
-                        onChange={(e) => setForm({ ...form, station: e.target.value })}
-                        className="w-full border border-rzd-gray-mid rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-rzd-red transition-colors bg-white"
-                      >
-                        <option value="">Выберите вокзал</option>
-                        <option>Москва — Ленинградский вокзал</option>
-                        <option>Москва — Казанский вокзал</option>
-                        <option>Москва — Ярославский вокзал</option>
-                        <option>Санкт-Петербург — Московский вокзал</option>
-                        <option>Санкт-Петербург — Финляндский вокзал</option>
-                        <option>Другой вокзал</option>
-                      </select>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="text-xs font-medium text-rzd-muted block mb-1.5">Дата и время</label>
-                        <input
-                          type="datetime-local"
-                          required
-                          value={form.date}
-                          onChange={(e) => setForm({ ...form, date: e.target.value })}
-                          className="w-full border border-rzd-gray-mid rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-rzd-red transition-colors"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-xs font-medium text-rzd-muted block mb-1.5">Мест багажа</label>
-                        <div className="flex items-center border border-rzd-gray-mid rounded-lg overflow-hidden">
-                          <button
-                            type="button"
-                            onClick={() => setForm({ ...form, bags: String(Math.max(1, Number(form.bags) - 1)) })}
-                            className="px-3 py-2.5 text-rzd-red hover:bg-rzd-gray transition-colors font-bold text-lg leading-none"
-                          >−</button>
-                          <div className="flex-1 text-center text-sm font-bold text-rzd-dark py-2.5 border-x border-rzd-gray-mid">
-                            {form.bags}
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => setForm({ ...form, bags: String(Number(form.bags) + 1) })}
-                            className="px-3 py-2.5 text-rzd-red hover:bg-rzd-gray transition-colors font-bold text-lg leading-none"
-                          >+</button>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-12 items-start">
+                {/* Левый блок — описание */}
+                <div>
+                  <div className="inline-flex items-center gap-2 bg-rzd-red/20 border border-rzd-red/40 text-rzd-red-light text-xs font-medium px-3 py-1.5 rounded-full mb-6">
+                    <Icon name={mode === "rzhd" ? "Train" : "Plane"} size={12} />
+                    {mode === "rzhd" ? "Все крупные вокзалы России" : "Аэропорты России"}
+                  </div>
+                  <h1 className="text-4xl md:text-5xl font-black leading-tight mb-4">
+                    {mode === "rzhd" ? <>Носильщик<br /><span className="text-rzd-red">на вокзале</span></> : <>Носильщик<br /><span className="text-rzd-red">в аэропорту</span></>}
+                  </h1>
+                  <p className="text-white/70 text-lg leading-relaxed mb-8 max-w-sm">
+                    {mode === "rzhd"
+                      ? "Встретим у вагона, заберём вещи и доставим до такси, выхода или любой точки вокзала"
+                      : "Встретим в зале прилёта, у стойки или у входа — и доставим вещи куда нужно"}
+                  </p>
+
+                  {/* Услуги */}
+                  <div className="space-y-2.5 mb-8">
+                    {(mode === "rzhd" ? rzhdServices : aviaServices).map(s => (
+                      <div key={s.value} className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-xl px-4 py-3">
+                        <div className="w-7 h-7 bg-rzd-red/20 rounded-lg flex items-center justify-center shrink-0">
+                          <Icon name={s.icon} fallback="Circle" size={14} className="text-rzd-red" />
                         </div>
+                        <span className="text-sm text-white/80">{s.label}</span>
                       </div>
-                    </div>
-                    <div>
-                      <label className="text-xs font-medium text-rzd-muted block mb-1.5">Поезд и номер вагона</label>
-                      <input
-                        type="text"
-                        required
-                        placeholder="Например: № 020А, вагон 5"
-                        value={form.train}
-                        onChange={(e) => setForm({ ...form, train: e.target.value })}
-                        className="w-full border border-rzd-gray-mid rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-rzd-red transition-colors"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs font-medium text-rzd-muted block mb-1.5">Табличка (необязательно)</label>
-                      <textarea
-                        rows={2}
-                        placeholder="Текст на табличке носильщика, особые пожелания..."
-                        value={form.sign}
-                        onChange={(e) => setForm({ ...form, sign: e.target.value })}
-                        className="w-full border border-rzd-gray-mid rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-rzd-red transition-colors resize-none"
-                      />
-                    </div>
+                    ))}
+                  </div>
 
-                    {/* Итоговая цена */}
-                    <div className="bg-rzd-gray rounded-xl px-4 py-3 flex items-center justify-between">
-                      <div className="text-sm text-rzd-muted">
-                        {form.bags} {Number(form.bags) === 1 ? "место" : Number(form.bags) < 5 ? "места" : "мест"} × 500 ₽
+                  {/* Цифры */}
+                  <div className="flex flex-wrap gap-6">
+                    {stats.map((s, i) => (
+                      <div key={i} className="text-center">
+                        <div className="text-2xl font-black text-rzd-red">{s.value}</div>
+                        <div className="text-xs text-white/50 mt-0.5">{s.sub}</div>
                       </div>
-                      <div className="text-xl font-black text-rzd-dark">
-                        {(Number(form.bags) * 500).toLocaleString("ru-RU")} ₽
-                      </div>
-                    </div>
+                    ))}
+                  </div>
+                </div>
 
-                    <button
-                      type="submit"
-                      className="w-full bg-rzd-red hover:bg-rzd-red-dark text-white font-bold py-3.5 rounded-lg transition-colors text-sm tracking-wide flex items-center justify-center gap-2"
-                    >
-                      <Icon name="CreditCard" size={16} />
-                      Оплатить и заказать — {(Number(form.bags) * 500).toLocaleString("ru-RU")} ₽
-                    </button>
-                    <p className="text-center text-xs text-rzd-muted">
-                      Нажимая кнопку, вы соглашаетесь с{" "}
-                      <span className="text-rzd-red cursor-pointer hover:underline">политикой обработки данных</span>
-                    </p>
-                  </form>
-                </>
-              )}
+                {/* Форма */}
+                <div className="bg-white rounded-2xl p-6 md:p-8 shadow-2xl text-rzd-dark">
+                  {mode === "rzhd" ? <RzhdForm /> : <AviaForm />}
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-      </section>
+          </section>
 
-      {/* КАК ЭТО РАБОТАЕТ */}
-      <section className="py-20 bg-rzd-gray">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="text-center mb-14">
-            <div className="inline-block w-10 h-1 bg-rzd-red mb-4" />
-            <h2 className="text-3xl font-black mb-3">Как работает сервис</h2>
-            <p className="text-rzd-muted max-w-md mx-auto">
-              4 простых шага от заявки до доставки ваших вещей
-            </p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            {steps.map((step, i) => (
-              <div key={i} className="relative text-center group">
-                <div className="relative inline-flex items-center justify-center w-16 h-16 bg-white rounded-full border-2 border-rzd-gray-mid group-hover:border-rzd-red transition-colors mb-4 mx-auto">
-                  <span className="text-rzd-red font-black text-lg">{step.number}</span>
-                </div>
-                <h3 className="font-bold text-sm mb-2 leading-tight">{step.title}</h3>
-                <p className="text-rzd-muted text-xs leading-relaxed">{step.desc}</p>
+          {/* КАК ЭТО РАБОТАЕТ */}
+          <section className="py-20 bg-rzd-gray" id="how-it-works">
+            <div className="max-w-6xl mx-auto px-6">
+              <div className="text-center mb-14">
+                <div className="inline-block w-10 h-1 bg-rzd-red mb-4" />
+                <h2 className="text-3xl font-black mb-3">Как работает сервис</h2>
+                <p className="text-rzd-muted max-w-md mx-auto">4 простых шага от заявки до доставки</p>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ПРЕИМУЩЕСТВА */}
-      <section className="py-20 bg-white">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="text-center mb-14">
-            <div className="inline-block w-10 h-1 bg-rzd-red mb-4" />
-            <h2 className="text-3xl font-black mb-3">Условия и преимущества</h2>
-            <p className="text-rzd-muted max-w-md mx-auto">
-              Профессиональный сервис с гарантией безопасности
-            </p>
-          </div>
-          <div className="grid md:grid-cols-3 gap-6">
-            {benefits.map((b, i) => (
-              <div
-                key={i}
-                className="group border border-rzd-gray-mid rounded-2xl p-8 hover:border-rzd-red hover:shadow-lg transition-all duration-300"
-              >
-                <div className="w-12 h-12 bg-rzd-red/10 rounded-xl flex items-center justify-center mb-6">
-                  <Icon name={b.icon} fallback="ShieldCheck" size={24} className="text-rzd-red" />
-                </div>
-                <div className="inline-block bg-rzd-red text-white text-xs font-bold px-2.5 py-1 rounded-full mb-4">
-                  {b.detail}
-                </div>
-                <h3 className="font-bold text-lg mb-3">{b.title}</h3>
-                <p className="text-rzd-muted text-sm leading-relaxed">{b.desc}</p>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                {steps.map((step, i) => (
+                  <div key={i} className="relative text-center group">
+                    <div className="relative inline-flex items-center justify-center w-16 h-16 bg-white rounded-full border-2 border-rzd-gray-mid group-hover:border-rzd-red transition-colors mb-4 mx-auto">
+                      <span className="text-rzd-red font-black text-lg">{step.number}</span>
+                    </div>
+                    <h3 className="font-bold text-sm mb-2 leading-tight">{step.title}</h3>
+                    <p className="text-rzd-muted text-xs leading-relaxed">{step.desc}</p>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </div>
+          </section>
 
-          <div className="mt-10 bg-rzd-gray rounded-2xl p-8 grid grid-cols-2 md:grid-cols-3 gap-6 text-center">
-            {[
-              { label: "Стоимость", value: "от 500 ₽", sub: "за 1 место" },
-              { label: "Зона работы", value: "Весь вокзал", sub: "включая перроны" },
-              { label: "Отмена заявки", value: "за 15 мин", sub: "полный возврат средств" },
-            ].map((item, i) => (
-              <div key={i}>
-                <div className="text-2xl font-black text-rzd-red mb-1">{item.value}</div>
-                <div className="font-semibold text-sm mb-0.5">{item.label}</div>
-                <div className="text-xs text-rzd-muted">{item.sub}</div>
+          {/* ПРЕИМУЩЕСТВА */}
+          <section className="py-20 bg-white">
+            <div className="max-w-6xl mx-auto px-6">
+              <div className="text-center mb-14">
+                <div className="inline-block w-10 h-1 bg-rzd-red mb-4" />
+                <h2 className="text-3xl font-black mb-3">Условия и преимущества</h2>
+                <p className="text-rzd-muted max-w-md mx-auto">Профессиональный сервис с гарантией безопасности</p>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
+              <div className="grid md:grid-cols-3 gap-6">
+                {bens.map((b, i) => (
+                  <div key={i} className="group border border-rzd-gray-mid rounded-2xl p-8 hover:border-rzd-red hover:shadow-lg transition-all duration-300">
+                    <div className="w-12 h-12 bg-rzd-red/10 rounded-xl flex items-center justify-center mb-6">
+                      <Icon name={b.icon} fallback="ShieldCheck" size={24} className="text-rzd-red" />
+                    </div>
+                    <div className="inline-block bg-rzd-red text-white text-xs font-bold px-2.5 py-1 rounded-full mb-4">{b.detail}</div>
+                    <h3 className="font-bold text-lg mb-3">{b.title}</h3>
+                    <p className="text-rzd-muted text-sm leading-relaxed">{b.desc}</p>
+                  </div>
+                ))}
+              </div>
 
-      {/* КОНТАКТЫ */}
+              <div className="mt-10 bg-rzd-gray rounded-2xl p-8 grid grid-cols-2 md:grid-cols-3 gap-6 text-center">
+                {stats.map((s, i) => (
+                  <div key={i}>
+                    <div className="text-2xl font-black text-rzd-red mb-1">{s.value}</div>
+                    <div className="font-semibold text-sm mb-0.5">{s.label}</div>
+                    <div className="text-xs text-rzd-muted">{s.sub}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        </>
+      )}
+
+      {/* КОНТАКТЫ — всегда */}
       <section className="py-20 bg-rzd-dark text-white">
         <div className="max-w-6xl mx-auto px-6">
           <div className="grid md:grid-cols-2 gap-12 items-center">
@@ -390,7 +635,7 @@ export default function Index() {
               <div className="inline-block w-10 h-1 bg-rzd-red mb-4" />
               <h2 className="text-3xl font-black mb-4">Контакты</h2>
               <p className="text-white/60 mb-8 leading-relaxed">
-                Если у вас возникли вопросы — звоните, пишите или обращайтесь к сотруднику РЖД на вокзале
+                Если у вас возникли вопросы — звоните, пишите или обращайтесь к сотруднику на месте
               </p>
               <div className="space-y-5">
                 <a href="tel:+78001000888" className="flex items-center gap-4 group">
@@ -402,12 +647,12 @@ export default function Index() {
                     <div className="text-white/50 text-xs">Бесплатно по России, 24/7</div>
                   </div>
                 </a>
-                <a href="mailto:baggage@rzd.ru" className="flex items-center gap-4 group">
+                <a href="mailto:info@myporter.ru" className="flex items-center gap-4 group">
                   <div className="w-11 h-11 bg-rzd-red/20 rounded-xl flex items-center justify-center group-hover:bg-rzd-red transition-colors">
                     <Icon name="Mail" size={18} className="text-rzd-red group-hover:text-white" />
                   </div>
                   <div>
-                    <div className="font-semibold">baggage@rzd.ru</div>
+                    <div className="font-semibold">info@myporter.ru</div>
                     <div className="text-white/50 text-xs">Ответим в течение дня</div>
                   </div>
                 </a>
@@ -416,34 +661,47 @@ export default function Index() {
                     <Icon name="MapPin" size={18} className="text-rzd-red" />
                   </div>
                   <div>
-                    <div className="font-semibold">Все крупные вокзалы России</div>
-                    <div className="text-white/50 text-xs">Москва, Санкт-Петербург и другие города</div>
+                    <div className="font-semibold">Вокзалы и аэропорты России</div>
+                    <div className="text-white/50 text-xs">Москва, Санкт-Петербург, Сочи и другие города</div>
                   </div>
                 </div>
               </div>
             </div>
             <div className="bg-white/5 border border-white/10 rounded-2xl p-8">
               <div className="flex items-center gap-3 mb-6">
-                <div className="bg-rzd-red text-white font-black text-sm px-3 py-1.5 rounded tracking-widest">
-                  РЖД
-                </div>
+                <div className="bg-rzd-red text-white font-black text-sm px-3 py-1.5 rounded tracking-widest">MP</div>
                 <div>
-                  <div className="font-semibold text-sm">ОАО «Российские железные дороги»</div>
-                  <div className="text-xs text-white/40">Официальный сервис переноски багажа</div>
+                  <div className="font-semibold text-sm">MyPorter</div>
+                  <div className="text-xs text-white/40">Сервис переноски багажа</div>
                 </div>
               </div>
-              <div className="space-y-3 text-sm text-white/60">
-                {[
-                  "Лицензированный сервис РЖД",
-                  "Обученный персонал с удостоверениями",
-                  "Страхование каждой перевозки",
-                  "Безналичная и наличная оплата",
-                ].map((item, i) => (
-                  <div key={i} className="flex gap-2">
-                    <Icon name="CheckCircle" size={16} className="text-rzd-red mt-0.5 shrink-0" />
-                    {item}
-                  </div>
-                ))}
+              <div className="space-y-3 text-sm text-white/70">
+                <div className="flex items-start gap-3">
+                  <Icon name="CheckCircle" size={16} className="text-rzd-red mt-0.5 shrink-0" />
+                  <span>Лицензированные носильщики на объектах транспорта</span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <Icon name="CheckCircle" size={16} className="text-rzd-red mt-0.5 shrink-0" />
+                  <span>Страхование багажа на время переноски</span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <Icon name="CheckCircle" size={16} className="text-rzd-red mt-0.5 shrink-0" />
+                  <span>Работаем на вокзалах и в аэропортах 24/7</span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <Icon name="CheckCircle" size={16} className="text-rzd-red mt-0.5 shrink-0" />
+                  <span>Возврат оплаты при своевременной отмене заявки</span>
+                </div>
+              </div>
+              <div className="mt-8 pt-6 border-t border-white/10 flex flex-col sm:flex-row gap-3">
+                <button onClick={() => { setMode("rzhd"); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                  className="flex-1 flex items-center justify-center gap-2 bg-rzd-dark border border-white/20 hover:border-rzd-red text-white font-semibold text-sm py-3 rounded-xl transition-colors">
+                  <Icon name="Train" size={15} />Вокзал
+                </button>
+                <button onClick={() => { setMode("avia"); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                  className="flex-1 flex items-center justify-center gap-2 bg-rzd-red hover:bg-rzd-red-dark text-white font-semibold text-sm py-3 rounded-xl transition-colors">
+                  <Icon name="Plane" size={15} />Аэропорт
+                </button>
               </div>
             </div>
           </div>
@@ -451,12 +709,12 @@ export default function Index() {
       </section>
 
       {/* FOOTER */}
-      <footer className="bg-black text-white/40 py-6">
-        <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-3 text-xs">
-          <div>© 2024 ОАО «РЖД». Все права защищены</div>
-          <div className="flex gap-6">
-            <span className="hover:text-white cursor-pointer transition-colors">Политика конфиденциальности</span>
-            <span className="hover:text-white cursor-pointer transition-colors">Условия сервиса</span>
+      <footer className="bg-black/30 bg-rzd-dark border-t border-white/5 py-6">
+        <div className="max-w-6xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-white/30 text-xs">
+          <span>© 2026 MyPorter. Все права защищены.</span>
+          <div className="flex gap-4">
+            <span className="hover:text-white/60 cursor-pointer transition-colors">Политика конфиденциальности</span>
+            <span className="hover:text-white/60 cursor-pointer transition-colors">Пользовательское соглашение</span>
           </div>
         </div>
       </footer>
