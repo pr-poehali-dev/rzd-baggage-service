@@ -350,78 +350,111 @@ export default function Index() {
       {/* ═══ ГЛАВНАЯ СТРАНИЦА (без выбора режима) ═══ */}
       {!mode && (
         <>
-          {/* HERO — выбор направления */}
-          <section className="bg-rzd-dark text-white relative overflow-hidden">
-            <div className="absolute inset-0 overflow-hidden pointer-events-none">
-              <div className="absolute top-0 right-0 w-[700px] h-[700px] bg-rzd-red rounded-full -translate-y-1/2 translate-x-1/3 opacity-10" />
-              <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-rzd-red rounded-full translate-y-1/2 -translate-x-1/3 opacity-10" />
+          {/* HERO — fullscreen split с фото */}
+          <section className="relative min-h-screen flex flex-col overflow-hidden bg-black">
+            {/* Фоновое фото */}
+            <div className="absolute inset-0">
+              <img
+                src="https://cdn.poehali.dev/projects/9c7aced7-85b1-4288-b6e2-c053fc7d00e2/files/e8b15d9b-e867-4e79-a8c1-c9f30352c914.jpg"
+                alt="MyPorter"
+                className="w-full h-full object-cover object-center opacity-50"
+              />
+              <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/80" />
+              <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-black/50" />
             </div>
-            <div className="max-w-6xl mx-auto px-6 py-20 md:py-28 relative text-center">
-              <div className="inline-flex items-center gap-2 bg-rzd-red/20 border border-rzd-red/40 text-rzd-red-light text-xs font-medium px-3 py-1.5 rounded-full mb-6">
-                <Icon name="MapPin" size={12} />
-                Вокзалы и аэропорты по всей России
+
+            {/* Контент */}
+            <div className="relative flex-1 flex flex-col items-center justify-center px-6 py-24 text-white text-center">
+              <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 text-white/80 text-xs font-medium px-4 py-2 rounded-full mb-8 tracking-wider uppercase">
+                <Icon name="MapPin" size={11} />
+                Вокзалы · Аэропорты · Вся Россия
               </div>
-              <h1 className="text-4xl md:text-6xl font-black leading-tight mb-5">
+
+              <h1 className="text-5xl md:text-7xl font-black leading-none mb-5 tracking-tight">
                 Профессиональная<br />
-                <span className="text-rzd-red">переноска багажа</span>
+                <span className="text-rzd-red">переноска</span> багажа
               </h1>
-              <p className="text-white/70 text-lg md:text-xl leading-relaxed mb-12 max-w-2xl mx-auto">
-                Носильщики встретят вас, заберут вещи и доставят куда нужно — на вокзале или в аэропорту
+              <p className="text-white/60 text-lg md:text-xl leading-relaxed mb-16 max-w-xl">
+                Носильщик встретит вас, заберёт вещи и доставит куда нужно — быстро и надёжно
               </p>
 
-              {/* Карточки выбора */}
-              <div className="grid sm:grid-cols-2 gap-5 max-w-2xl mx-auto" id="order">
+              {/* Два больших выбора */}
+              <div className="grid sm:grid-cols-2 gap-4 w-full max-w-3xl">
                 {/* ЖД */}
                 <button
-                  onClick={() => { setMode("rzhd"); setTimeout(() => document.getElementById("order-form")?.scrollIntoView({ behavior: "smooth" }), 100); }}
-                  className="group relative bg-white/5 hover:bg-white/10 border border-white/15 hover:border-rzd-red rounded-2xl p-8 text-left transition-all duration-300 cursor-pointer"
+                  onClick={() => { setMode("rzhd"); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                  className="group relative overflow-hidden rounded-2xl border border-white/10 hover:border-rzd-red bg-white/5 hover:bg-white/10 backdrop-blur-sm transition-all duration-300 text-left"
                 >
-                  <div className="w-14 h-14 bg-rzd-red/20 group-hover:bg-rzd-red rounded-2xl flex items-center justify-center mb-5 transition-colors">
-                    <Icon name="Train" size={28} className="text-rzd-red group-hover:text-white transition-colors" />
-                  </div>
-                  <h3 className="text-xl font-black mb-2">Железнодорожный</h3>
-                  <p className="text-white/60 text-sm leading-relaxed mb-5">Помощь с багажом на вокзалах России — до вагона, от поезда, по территории</p>
-                  <div className="flex flex-wrap gap-2">
-                    {["До вагона", "От поезда", "До такси", "По вокзалу"].map(t => (
-                      <span key={t} className="text-xs bg-white/10 text-white/70 px-2.5 py-1 rounded-full">{t}</span>
-                    ))}
-                  </div>
-                  <div className="mt-5 flex items-center gap-1.5 text-rzd-red text-sm font-bold group-hover:gap-3 transition-all">
-                    Выбрать <Icon name="ArrowRight" size={15} />
+                  <div
+                    className="absolute inset-0 opacity-20 group-hover:opacity-30 transition-opacity duration-500 bg-cover bg-center"
+                    style={{ backgroundImage: `url(https://cdn.poehali.dev/projects/9c7aced7-85b1-4288-b6e2-c053fc7d00e2/files/66196494-4ed4-4d26-8bcd-a040990d2c54.jpg)` }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                  <div className="relative p-8 flex flex-col h-full min-h-[260px] justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-xl bg-rzd-red/30 group-hover:bg-rzd-red flex items-center justify-center transition-colors duration-300">
+                        <Icon name="Train" size={22} className="text-white" />
+                      </div>
+                      <span className="text-xs font-semibold text-white/50 uppercase tracking-widest">Железнодорожный</span>
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-black mb-2">Носильщик<br />на вокзале</h3>
+                      <p className="text-white/60 text-sm leading-relaxed mb-5">До вагона, от поезда, до такси — по любому маршруту на вокзале</p>
+                      <div className="flex flex-wrap gap-1.5 mb-5">
+                        {["До вагона", "От поезда", "До такси", "По вокзалу"].map(t => (
+                          <span key={t} className="text-xs bg-white/10 text-white/70 px-2.5 py-1 rounded-full border border-white/10">{t}</span>
+                        ))}
+                      </div>
+                      <div className="flex items-center gap-2 text-rzd-red text-sm font-bold group-hover:gap-4 transition-all duration-300">
+                        Заказать <Icon name="ArrowRight" size={15} />
+                      </div>
+                    </div>
                   </div>
                 </button>
 
                 {/* Авиа */}
                 <button
-                  onClick={() => { setMode("avia"); setTimeout(() => document.getElementById("order-form")?.scrollIntoView({ behavior: "smooth" }), 100); }}
-                  className="group relative bg-white/5 hover:bg-white/10 border border-white/15 hover:border-rzd-red rounded-2xl p-8 text-left transition-all duration-300 cursor-pointer"
+                  onClick={() => { setMode("avia"); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                  className="group relative overflow-hidden rounded-2xl border border-white/10 hover:border-rzd-red bg-white/5 hover:bg-white/10 backdrop-blur-sm transition-all duration-300 text-left"
                 >
-                  <div className="w-14 h-14 bg-rzd-red/20 group-hover:bg-rzd-red rounded-2xl flex items-center justify-center mb-5 transition-colors">
-                    <Icon name="Plane" size={28} className="text-rzd-red group-hover:text-white transition-colors" />
-                  </div>
-                  <h3 className="text-xl font-black mb-2">Авиационный</h3>
-                  <p className="text-white/60 text-sm leading-relaxed mb-5">Помощь с багажом в аэропортах — до стойки регистрации, от самолёта, по терминалам</p>
-                  <div className="flex flex-wrap gap-2">
-                    {["До регистрации", "От самолёта", "До такси", "По терминалу"].map(t => (
-                      <span key={t} className="text-xs bg-white/10 text-white/70 px-2.5 py-1 rounded-full">{t}</span>
-                    ))}
-                  </div>
-                  <div className="mt-5 flex items-center gap-1.5 text-rzd-red text-sm font-bold group-hover:gap-3 transition-all">
-                    Выбрать <Icon name="ArrowRight" size={15} />
+                  <div
+                    className="absolute inset-0 opacity-20 group-hover:opacity-30 transition-opacity duration-500 bg-cover bg-center"
+                    style={{ backgroundImage: `url(https://cdn.poehali.dev/projects/9c7aced7-85b1-4288-b6e2-c053fc7d00e2/files/d0eb1b47-5603-41c0-90b8-331ad33b2781.jpg)` }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                  <div className="relative p-8 flex flex-col h-full min-h-[260px] justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-xl bg-rzd-red/30 group-hover:bg-rzd-red flex items-center justify-center transition-colors duration-300">
+                        <Icon name="Plane" size={22} className="text-white" />
+                      </div>
+                      <span className="text-xs font-semibold text-white/50 uppercase tracking-widest">Авиационный</span>
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-black mb-2">Носильщик<br />в аэропорту</h3>
+                      <p className="text-white/60 text-sm leading-relaxed mb-5">До регистрации, от самолёта, по терминалу — встретим с табличкой</p>
+                      <div className="flex flex-wrap gap-1.5 mb-5">
+                        {["До регистрации", "От самолёта", "До такси", "По терминалу"].map(t => (
+                          <span key={t} className="text-xs bg-white/10 text-white/70 px-2.5 py-1 rounded-full border border-white/10">{t}</span>
+                        ))}
+                      </div>
+                      <div className="flex items-center gap-2 text-rzd-red text-sm font-bold group-hover:gap-4 transition-all duration-300">
+                        Заказать <Icon name="ArrowRight" size={15} />
+                      </div>
+                    </div>
                   </div>
                 </button>
               </div>
 
-              {/* Цифры */}
-              <div className="flex flex-wrap justify-center gap-8 mt-14">
+              {/* Цифры внизу */}
+              <div className="flex flex-wrap justify-center gap-10 mt-14 pt-10 border-t border-white/10 w-full max-w-3xl">
                 {[
-                  { val: "от 500 ₽", sub: "стоимость услуги" },
+                  { val: "от 500 ₽",    sub: "стоимость услуги" },
                   { val: "15+ городов", sub: "присутствие сервиса" },
-                  { val: "24/7", sub: "работа сервиса" },
+                  { val: "24/7",        sub: "работа сервиса" },
                 ].map((s, i) => (
                   <div key={i} className="text-center">
-                    <div className="text-2xl font-black text-rzd-red">{s.val}</div>
-                    <div className="text-xs text-white/50 mt-0.5">{s.sub}</div>
+                    <div className="text-2xl font-black text-white">{s.val}</div>
+                    <div className="text-xs text-white/40 mt-1 uppercase tracking-wider">{s.sub}</div>
                   </div>
                 ))}
               </div>
@@ -499,21 +532,31 @@ export default function Index() {
       {/* ═══ РЕЖИМ: ЖД или АВИА ═══ */}
       {mode && (
         <>
-          {/* HERO с формой */}
-          <section className="bg-rzd-dark text-white relative overflow-hidden" id="order-form">
-            <div className="absolute inset-0 overflow-hidden pointer-events-none">
-              <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-rzd-red rounded-full -translate-y-1/2 translate-x-1/3 opacity-10" />
-              <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-rzd-red rounded-full translate-y-1/2 -translate-x-1/3 opacity-10" />
+          {/* HERO с фото + форма */}
+          <section className="relative min-h-screen overflow-hidden bg-black" id="order-form">
+            {/* Фон — своё фото для каждого режима */}
+            <div className="absolute inset-0">
+              <img
+                src={mode === "rzhd"
+                  ? "https://cdn.poehali.dev/projects/9c7aced7-85b1-4288-b6e2-c053fc7d00e2/files/66196494-4ed4-4d26-8bcd-a040990d2c54.jpg"
+                  : "https://cdn.poehali.dev/projects/9c7aced7-85b1-4288-b6e2-c053fc7d00e2/files/d0eb1b47-5603-41c0-90b8-331ad33b2781.jpg"
+                }
+                alt=""
+                className="w-full h-full object-cover object-center transition-all duration-700"
+                style={{ opacity: 0.45 }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-black/20" />
+              <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60" />
             </div>
-            <div className="max-w-6xl mx-auto px-6 py-14 md:py-20 relative">
 
-              {/* Переключатель вверху */}
+            <div className="relative max-w-6xl mx-auto px-6 py-10 md:py-16 min-h-screen flex flex-col">
+              {/* Переключатель */}
               <div className="flex items-center gap-3 mb-10">
                 <button onClick={() => setMode(null)} className="flex items-center gap-1.5 text-white/50 hover:text-white text-sm transition-colors">
                   <Icon name="ArrowLeft" size={15} />Все услуги
                 </button>
                 <span className="text-white/20">/</span>
-                <div className="flex bg-white/10 rounded-xl p-1 gap-1">
+                <div className="flex bg-black/40 backdrop-blur-sm border border-white/10 rounded-xl p-1 gap-1">
                   <button onClick={() => setMode("rzhd")} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${mode === "rzhd" ? "bg-rzd-red text-white" : "text-white/60 hover:text-white"}`}>
                     <Icon name="Train" size={15} />Вокзал
                   </button>
@@ -523,28 +566,31 @@ export default function Index() {
                 </div>
               </div>
 
-              <div className="grid md:grid-cols-2 gap-12 items-start">
-                {/* Левый блок — описание */}
-                <div>
-                  <div className="inline-flex items-center gap-2 bg-rzd-red/20 border border-rzd-red/40 text-rzd-red-light text-xs font-medium px-3 py-1.5 rounded-full mb-6">
-                    <Icon name={mode === "rzhd" ? "Train" : "Plane"} size={12} />
-                    {mode === "rzhd" ? "Все крупные вокзалы России" : "Аэропорты России"}
+              {/* Основной контент */}
+              <div className="flex-1 grid md:grid-cols-2 gap-12 items-center">
+                {/* Левый блок */}
+                <div className="text-white">
+                  <div className="inline-flex items-center gap-2 bg-rzd-red/20 border border-rzd-red/40 text-rzd-red text-xs font-semibold px-4 py-2 rounded-full mb-8 uppercase tracking-wider">
+                    <Icon name={mode === "rzhd" ? "Train" : "Plane"} size={11} />
+                    {mode === "rzhd" ? "Вокзалы России" : "Аэропорты России"}
                   </div>
-                  <h1 className="text-4xl md:text-5xl font-black leading-tight mb-4">
-                    {mode === "rzhd" ? <>Носильщик<br /><span className="text-rzd-red">на вокзале</span></> : <>Носильщик<br /><span className="text-rzd-red">в аэропорту</span></>}
-                  </h1>
-                  <p className="text-white/70 text-lg leading-relaxed mb-8 max-w-sm">
+                  <h1 className="text-5xl md:text-6xl font-black leading-none mb-5 tracking-tight">
                     {mode === "rzhd"
-                      ? "Встретим у вагона, заберём вещи и доставим до такси, выхода или любой точки вокзала"
-                      : "Встретим в зале прилёта, у стойки или у входа — и доставим вещи куда нужно"}
+                      ? <>Носильщик<br />встретит вас<br /><span className="text-rzd-red">у вагона</span></>
+                      : <>Носильщик<br />встретит вас<br /><span className="text-rzd-red">в аэропорту</span></>}
+                  </h1>
+                  <p className="text-white/60 text-lg leading-relaxed mb-10 max-w-sm">
+                    {mode === "rzhd"
+                      ? "Бережная доставка багажа без ограничений по весу — от вагона до вашей машины или выхода"
+                      : "Встретим в зале прилёта или у стойки регистрации — доставим вещи куда нужно"}
                   </p>
 
                   {/* Услуги */}
-                  <div className="space-y-2.5 mb-8">
+                  <div className="space-y-2 mb-10">
                     {(mode === "rzhd" ? rzhdServices : aviaServices).map(s => (
-                      <div key={s.value} className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-xl px-4 py-3">
-                        <div className="w-7 h-7 bg-rzd-red/20 rounded-lg flex items-center justify-center shrink-0">
-                          <Icon name={s.icon} fallback="Circle" size={14} className="text-rzd-red" />
+                      <div key={s.value} className="flex items-center gap-3 bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl px-4 py-3 hover:border-white/20 transition-colors">
+                        <div className="w-7 h-7 bg-rzd-red/30 rounded-lg flex items-center justify-center shrink-0">
+                          <Icon name={s.icon} fallback="Circle" size={13} className="text-rzd-red" />
                         </div>
                         <span className="text-sm text-white/80">{s.label}</span>
                       </div>
@@ -552,11 +598,11 @@ export default function Index() {
                   </div>
 
                   {/* Цифры */}
-                  <div className="flex flex-wrap gap-6">
+                  <div className="flex flex-wrap gap-8 pt-8 border-t border-white/10">
                     {stats.map((s, i) => (
-                      <div key={i} className="text-center">
-                        <div className="text-2xl font-black text-rzd-red">{s.value}</div>
-                        <div className="text-xs text-white/50 mt-0.5">{s.sub}</div>
+                      <div key={i}>
+                        <div className="text-xl font-black text-white">{s.value}</div>
+                        <div className="text-xs text-white/40 mt-0.5 uppercase tracking-wider">{s.sub}</div>
                       </div>
                     ))}
                   </div>
