@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useNavigate, useLocation, Outlet, Link } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import Icon from "@/components/ui/icon";
+import SupportButton from "@/components/cabinet/SupportButton";
 
 const navItems = [
   { path: "/cabinet", label: "Главная", icon: "LayoutDashboard" },
@@ -112,6 +113,8 @@ export default function CabinetLayout() {
           </a>
         </div>
       </nav>
+
+      <SupportButton />
     </div>
   );
 }
