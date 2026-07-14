@@ -46,12 +46,39 @@ export interface User {
   phone: string;
   email: string;
   photo?: string;
+  referralCode?: string;
+}
+
+export interface ReferralEntry {
+  id: string;
+  name: string;
+  date: string;
+  status: "registered" | "ordered";
+  bonus: number;
+}
+
+export interface BonusTransaction {
+  id: string;
+  date: string;
+  type: "accrual" | "withdrawal";
+  amount: number;
+  description: string;
+}
+
+export interface PartnerStats {
+  referralCode: string;
+  invitedCount: number;
+  totalEarned: number;
+  availableBalance: number;
+  referrals: ReferralEntry[];
+  transactions: BonusTransaction[];
 }
 
 interface AuthContextType {
   user: User | null;
   orders: Order[];
   savedRoutes: SavedRoute[];
+  partnerStats: PartnerStats;
   isLoading: boolean;
   sendCode: (phone: string) => Promise<void>;
   verifyCode: (phone: string, code: string) => Promise<boolean>;
@@ -126,6 +153,24 @@ const mockRoutes: SavedRoute[] = [
   { id: "r2", name: "В Питер на выходные", station: "Москва — Ленинградский вокзал", train: "002А", wagon: "3", bags: 1, serviceType: "station_to_taxi" },
 ];
 
+const mockPartnerStats: PartnerStats = {
+  referralCode: "MP-ANNA142",
+  invitedCount: 3,
+  totalEarned: 1500,
+  availableBalance: 800,
+  referrals: [
+    { id: "f1", name: "Сергей К.", date: "02.06.2026", status: "ordered", bonus: 500 },
+    { id: "f2", name: "Марина В.", date: "18.05.2026", status: "ordered", bonus: 500 },
+    { id: "f3", name: "Игорь Т.", date: "05.05.2026", status: "registered", bonus: 500 },
+  ],
+  transactions: [
+    { id: "t1", date: "02.06.2026", type: "accrual", amount: 500, description: "Заказ друга — Сергей К." },
+    { id: "t2", date: "18.05.2026", type: "accrual", amount: 500, description: "Заказ друга — Марина В." },
+    { id: "t3", date: "10.05.2026", type: "withdrawal", amount: -200, description: "Списание при оплате заказа" },
+    { id: "t4", date: "05.05.2026", type: "accrual", amount: 500, description: "Регистрация друга — Игорь Т." },
+  ],
+};
+
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -162,7 +207,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setOrders((p) => p.map((o) => o.id === id ? { ...o, rating } : o));
 
   return (
-    <AuthContext.Provider value={{ user, orders, savedRoutes, isLoading, sendCode, verifyCode, register, logout, updateUser, addRoute, deleteRoute, rateOrder }}>
+    <AuthContext.Provider value={{ user, orders, savedRoutes, partnerStats: mockPartnerStats, isLoading, sendCode, verifyCode, register, logout, updateUser, addRoute, deleteRoute, rateOrder }}>
       {children}
     </AuthContext.Provider>
   );

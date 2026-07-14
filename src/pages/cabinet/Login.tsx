@@ -13,6 +13,7 @@ export default function Login() {
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
   const [isNew, setIsNew] = useState(false);
+  const [agreed, setAgreed] = useState(false);
   const [reg, setReg] = useState({ lastName: "", firstName: "", middleName: "", email: "" });
   const [error, setError] = useState("");
   const { sendCode, verifyCode, register, isLoading } = useAuth();
@@ -72,7 +73,31 @@ export default function Login() {
         {/* ШАГ 1: телефон */}
         {step === "phone" && (
           <>
-            <h1 className="text-xl font-black text-rzd-dark mb-1">Вход или регистрация</h1>
+            {/* Вкладки Вход / Регистрация */}
+            <div className="flex bg-rzd-gray rounded-xl p-1 mb-6">
+              <button
+                type="button"
+                onClick={() => setIsNew(false)}
+                className={`flex-1 py-2 rounded-lg text-sm font-bold transition-colors ${
+                  !isNew ? "bg-white text-rzd-dark shadow-sm" : "text-rzd-muted"
+                }`}
+              >
+                Вход
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsNew(true)}
+                className={`flex-1 py-2 rounded-lg text-sm font-bold transition-colors ${
+                  isNew ? "bg-white text-rzd-dark shadow-sm" : "text-rzd-muted"
+                }`}
+              >
+                Регистрация
+              </button>
+            </div>
+
+            <h1 className="text-xl font-black text-rzd-dark mb-1">
+              {isNew ? "Создать личный кабинет" : "Вход в личный кабинет"}
+            </h1>
             <p className="text-rzd-muted text-sm mb-6">Введите номер телефона — пришлём код</p>
 
             <form onSubmit={handlePhone} className="space-y-4">
@@ -89,32 +114,27 @@ export default function Login() {
                 {error && <p className="text-rzd-red text-xs mt-1.5">{error}</p>}
               </div>
 
-              <div className="flex items-center gap-2">
+              <label className="flex items-start gap-2.5 cursor-pointer">
                 <input
                   type="checkbox"
-                  id="newUser"
-                  checked={isNew}
-                  onChange={(e) => setIsNew(e.target.checked)}
-                  className="w-4 h-4 accent-rzd-red"
+                  checked={agreed}
+                  onChange={(e) => setAgreed(e.target.checked)}
+                  className="w-4 h-4 mt-0.5 accent-rzd-red shrink-0"
                 />
-                <label htmlFor="newUser" className="text-sm text-rzd-muted cursor-pointer">
-                  Я регистрируюсь впервые
-                </label>
-              </div>
+                <span className="text-xs text-rzd-muted leading-snug">
+                  Я принимаю условия{" "}
+                  <span className="text-rzd-red hover:underline">политики обработки персональных данных</span>
+                </span>
+              </label>
 
               <button
                 type="submit"
-                disabled={isLoading}
+                disabled={isLoading || !agreed}
                 className="w-full bg-rzd-red hover:bg-rzd-red-dark disabled:opacity-60 text-white font-bold py-3 rounded-lg transition-colors text-sm flex items-center justify-center gap-2"
               >
                 {isLoading ? <><Spinner />Отправляем код...</> : <>Получить код <Icon name="ArrowRight" size={16} /></>}
               </button>
             </form>
-
-            <p className="text-xs text-rzd-muted text-center mt-6">
-              Нажимая кнопку, вы соглашаетесь с{" "}
-              <span className="text-rzd-red cursor-pointer hover:underline">политикой обработки персональных данных</span>
-            </p>
           </>
         )}
 
@@ -227,8 +247,12 @@ export default function Login() {
         )}
       </div>
 
-      <Link to="/" className="text-rzd-muted text-xs mt-6 hover:text-rzd-red transition-colors">
-        ← Вернуться на главную
+      <Link
+        to="/"
+        className="flex items-center gap-1.5 text-rzd-muted text-sm font-medium mt-6 py-2 px-3 hover:text-rzd-red transition-colors"
+      >
+        <Icon name="House" size={16} />
+        Вернуться на главную
       </Link>
     </div>
   );

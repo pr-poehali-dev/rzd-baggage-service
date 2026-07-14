@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { Link } from "react-router-dom";
 import { useAuth, SavedRoute, SERVICE_LABELS, ServiceType } from "@/context/AuthContext";
 import Icon from "@/components/ui/icon";
 
@@ -26,7 +27,7 @@ function bagsWord(n: number) {
 }
 
 export default function Profile() {
-  const { user, orders, savedRoutes, updateUser, addRoute, deleteRoute, logout } = useAuth();
+  const { user, orders, savedRoutes, partnerStats, updateUser, addRoute, deleteRoute, logout } = useAuth();
   const fileRef = useRef<HTMLInputElement>(null);
 
   const [editing, setEditing] = useState(false);
@@ -214,6 +215,34 @@ export default function Profile() {
             )}
           </div>
         )}
+      </div>
+
+      {/* Партнёрская программа */}
+      <div className="bg-rzd-dark rounded-2xl p-5 text-white">
+        <div className="flex items-center justify-between mb-1">
+          <div className="flex items-center gap-2">
+            <Icon name="Gift" size={16} className="text-rzd-red-light" />
+            <h3 className="font-bold text-sm">Партнёрская программа</h3>
+          </div>
+          <Link
+            to="/cabinet/partners"
+            className="flex items-center gap-1 text-xs font-semibold text-white/70 hover:text-white transition-colors"
+          >
+            Подробнее
+            <Icon name="ChevronRight" size={13} />
+          </Link>
+        </div>
+        <p className="text-white/50 text-xs mb-4">Приглашайте друзей — получайте 500 ₽ за каждого</p>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-white/10 border border-white/10 rounded-xl px-4 py-3">
+            <p className="text-lg font-black">{partnerStats.invitedCount}</p>
+            <p className="text-xs text-white/50">Приглашено друзей</p>
+          </div>
+          <div className="bg-white/10 border border-white/10 rounded-xl px-4 py-3">
+            <p className="text-lg font-black">{partnerStats.totalEarned.toLocaleString("ru-RU")} ₽</p>
+            <p className="text-xs text-white/50">Заработано бонусов</p>
+          </div>
+        </div>
       </div>
 
       {/* Мои маршруты */}

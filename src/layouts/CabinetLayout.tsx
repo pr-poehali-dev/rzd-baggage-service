@@ -7,6 +7,7 @@ import SupportButton from "@/components/cabinet/SupportButton";
 const navItems = [
   { path: "/cabinet", label: "Главная", icon: "LayoutDashboard" },
   { path: "/cabinet/orders", label: "Заказы", icon: "History" },
+  { path: "/cabinet/partners", label: "Партнёрам", icon: "Gift" },
   { path: "/cabinet/profile", label: "Профиль", icon: "User" },
 ];
 
